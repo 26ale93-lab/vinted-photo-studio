@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b756b">
-<title>Vinted Photo Studio — iPhone v1.5</title>
+<title>Vinted Photo Studio — iPhone v1.5.1</title>
 <style>
 :root{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f3f6f5;color:#1b2e2c}
 *{box-sizing:border-box}body{margin:0;background:#f3f6f5}
@@ -29,7 +29,7 @@ footer{padding:20px 0 10px;text-align:center;color:#667b76;font-size:12px}
 <body>
 <header>
   <h1>Vinted Photo Studio</h1>
-  <p>v1.5 · Migliora foto · Pulisci sfondo · Rimuovi sfondo · Download</p>
+  <p>v1.5.1 · Migliora foto · Pulisci sfondo · Rimuovi sfondo · Download</p>
 </header>
 <main>
   <section class="card">
@@ -99,7 +99,7 @@ footer{padding:20px 0 10px;text-align:center;color:#667b76;font-size:12px}
     <p id="downloadStatus" class="progress"></p>
     <p class="small">Su iPhone, se Safari blocca più download consecutivi, usa lo ZIP.</p>
   </section>
-  <footer>Vinted Photo Studio v1.5 · versione focalizzata sulle immagini</footer>
+  <footer>Vinted Photo Studio v1.5.1 · versione focalizzata sulle immagini</footer>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script type="module">
@@ -176,9 +176,29 @@ function redraw(){ const root=$('#photos'); root.replaceChildren(); $('#total').
  const labelWrap=document.createElement('div'); labelWrap.className='stack'; const labelTitle=document.createElement('div'); labelTitle.className='sub'; labelTitle.textContent='Etichetta file esportato'; const labelInput=document.createElement('select'); ['fronte','retro','lato','dettaglio','etichetta','suola','difetto','altro'].forEach(v=>{let o=document.createElement('option');o.value=v;o.textContent=v[0].toUpperCase()+v.slice(1);labelInput.append(o);}); labelInput.value=['fronte','retro','lato','dettaglio','etichetta','suola','difetto','altro'].includes(item.label)?item.label:'altro'; item.label=labelInput.value; labelInput.onchange=()=> item.label=labelInput.value; labelWrap.append(labelTitle,labelInput); sec.append(labelWrap); makeSlider(item,'brightness','Luminosità',65,140,sec,refresh); makeSlider(item,'contrast','Contrasto',70,135,sec,refresh); makeSlider(item,'saturate','Saturazione',70,130,sec,refresh); makeSlider(item,'warmth','Temperatura',-50,50,sec,refresh); makeSlider(item,'sharp','Nitidezza',0,35,sec,refresh); const cr=document.createElement('label');cr.className='range';cr.innerHTML='<span>Ritaglio margini</span>';const cv=document.createElement('span');cv.textContent=(item.crop||0)+'%';cr.append(cv);sec.append(cr);const ci=document.createElement('input');ci.type='range';ci.min='0';ci.max='18';ci.value=item.crop||0;ci.oninput=()=>{item.crop=Number(ci.value);cv.textContent=ci.value+'%';refresh();};sec.append(ci); const ciLabel=document.createElement('label');ciLabel.className='range';ciLabel.innerHTML='<span>Intensità pulizia sfondo</span>';const ciValue=document.createElement('span');ciValue.textContent=(item.cleanStrength??85)+'%';ciLabel.append(ciValue);sec.append(ciLabel);
  const cleanRange=document.createElement('input');cleanRange.type='range';cleanRange.min=20;cleanRange.max=100;cleanRange.value=item.cleanStrength??85;cleanRange.oninput=()=>{item.cleanStrength=Number(cleanRange.value);ciValue.textContent=cleanRange.value+'%';refresh();};sec.append(cleanRange);
  const status=document.createElement('div'); status.className='progress'; sec.append(status); const info=document.createElement('div'); info.className='small'; info.textContent='Controlla sempre che prodotto, colore e difetti reali restino fedeli.'; sec.append(info); const presets=document.createElement('div');presets.className='row';
- const presetDefs=[['Naturale',{brightness:100,contrast:100,saturate:100,warmth:0,sharp:3}],['Più luminoso',{brightness:108,contrast:101,saturate:100,warmth:0,sharp:3}],['Vinted pulito',{brightness:104,contrast:103,saturate:100,warmth:0,sharp:5}],['Solo sfondo',null]];
- presetDefs.forEach(([label,values])=>{const b=document.createElement('button');b.className='soft';b.textContent=label;
- b.onclick=()=>{if(values){item.settings={...values};item.mode='improve';item.status='Preset '+label+' applicato. Controlla i colori reali.';}else{item.settings=defaults();item.mode=item.aiMaskImg?'clean':'improve';item.status=item.aiMaskImg?'Pulizia sfondo con AI, senza regolazioni globali.':'Per pulire solo lo sfondo, premi Pulizia precisa AI.';}item.cleanMask=null;refresh();};presets.append(b);});
+ const presetDefs=[
+ ['Naturale',{brightness:100,contrast:100,saturate:100,warmth:0,sharp:2}],
+ ['Più luminoso',{brightness:118,contrast:103,saturate:101,warmth:0,sharp:3}],
+ ['Vinted pulito',{brightness:108,contrast:110,saturate:104,warmth:0,sharp:7}],
+ ['Solo sfondo',null]
+ ];
+ presetDefs.forEach(([label,values])=>{
+ const b=document.createElement('button');b.className='soft';b.textContent=label;
+ b.onclick=()=>{
+   if(values){
+     item.settings={...values};
+     // Conserva pulizia IA o scontorno già applicati: cambia solo il trattamento della foto.
+     item.status='Preset «'+label+'» applicato. Valori aggiornati.';
+   }else{
+     item.settings=defaults();
+     item.mode=item.aiMaskImg?'clean':'improve';
+     item.status=item.aiMaskImg?'Solo sfondo: pulizia AI senza ritocchi fotografici.':'Solo sfondo: prima usa Pulizia precisa AI.';
+   }
+   item.cleanMask=null;
+   redraw();
+ };
+ presets.append(b);
+ });
  const presetTitle=document.createElement('div');presetTitle.className='toolbarTitle';presetTitle.textContent='Preset rapidi';sec.append(presetTitle,presets);
  const actions1=document.createElement('div'); actions1.className='row'; const improve=document.createElement('button'); improve.className='secondary'; improve.textContent='Migliora foto'; improve.onclick=()=>{ item.mode='improve'; item.status='Correzione fotografica naturale applicata.'; refresh(); }; const clean=document.createElement('button'); clean.className='secondary'; clean.textContent='Pulisci sfondo'; clean.onclick=()=>{ item.mode='clean'; item.status='Sfondo chiaro uniformato e ripulito.'; item.cleanMask=null; refresh(); }; const precise=document.createElement('button');precise.className='secondary';precise.textContent='Pulizia precisa AI';
  precise.onclick=async()=>{precise.disabled=true;try{await removeBackgroundAI(drawBasePhoto(item),item,status);item.mode='clean';item.status='Pulizia AI attivata. Controlla i bordi del prodotto.';refresh();}catch(e){item.status='Pulizia AI non disponibile: '+e.message;status.textContent=item.status;}finally{precise.disabled=false;}};
