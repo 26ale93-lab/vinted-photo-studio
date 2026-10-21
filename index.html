@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b756b">
-<title>Vinted Photo Studio — iPhone v1.8</title>
+<meta name="theme-color" content="#f5f7fa">
+<title>Vinted Photo Studio — iPhone v1.9</title>
 <style>
 :root{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f3f6f5;color:#1b2e2c}
 *{box-sizing:border-box}body{margin:0;background:#f3f6f5}
@@ -25,7 +25,7 @@ input[type=file]{width:100%;font-size:14px}input[type=range]{width:100%;accent-c
 .list{padding-left:18px;margin:8px 0;font-size:12px;color:#516661;line-height:1.5}.small{font-size:11px;color:#6b7d79}.stack{display:grid;gap:8px}.toolbarTitle{font-size:13px;font-weight:700;color:#35534d;margin:10px 0 4px}
 footer{padding:20px 0 10px;text-align:center;color:#667b76;font-size:12px}
 
-/* Studio Light — interface v1.8 */
+/* Studio Light — interface v1.9 */
 :root{--ink:#19342f;--teal:#087b71;--line:#dae8e3}
 body{background:#edf2f0;color:var(--ink)}
 header{background:#fff;color:var(--ink);padding:calc(16px + env(safe-area-inset-top)) 18px 18px;border-bottom:1px solid var(--line)}
@@ -62,7 +62,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 @media(min-width:700px){.comparison{aspect-ratio:4/3;max-height:580px}}
 
 
-/* v1.8: professional mobile studio */
+/* v1.9: professional mobile studio */
 :root{--brand:#087d72;--ink:#18302c;--muted:#657a74}
 header{position:sticky;top:0;z-index:30;box-shadow:0 5px 22px #203e3509;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);background:#fefefef0}
 header:before{content:'STUDIO EDITION';font-size:9px;font-weight:850;letter-spacing:2.4px;color:#36887a;display:block;margin-bottom:5px}
@@ -84,12 +84,68 @@ main{padding-top:18px}
 #downloadZip{min-height:48px}
 #downloadStatus{min-height:18px}
 @media(max-width:460px){.studioWorkspace{padding:12px}.comparison{max-height:55vh}.photo .row button{font-size:12px;padding:12px 8px}}
+
+/* Vinted Photo Studio v1.9 — editorial premium UI */
+:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--navy:#17263b;--teal:#087d83;--mint:#ddf4ef;--paper:#f5f7fa;--line:#e2e8ed;--muted:#68798b;--focus:#15a5a4;color:var(--navy);background:var(--paper)}
+body{background:radial-gradient(ellipse at 50% -4%,#e8f7f3 0%,#f5f7fa 45%,#f5f7fa 100%);color:var(--navy)}
+header{position:sticky;top:0;z-index:30;background:#ffffffed;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid #dfebe9;box-shadow:0 5px 22px #1a3d4410;padding:calc(11px + env(safe-area-inset-top)) 17px 13px}
+header:before{content:"PHOTO EDITING SUITE  ·  V1.9";display:block;font-size:9px;letter-spacing:2.2px;font-weight:800;color:#178c90;margin:0 0 6px}
+header h1{font-size:23px;letter-spacing:-1px;font-weight:850;color:#182b3e;margin:0 0 4px}
+header p{font-size:11px;color:#758498;opacity:1;letter-spacing:.1px}
+main{max-width:780px;padding:18px 12px calc(95px + env(safe-area-inset-bottom))}
+.card{background:#fff;border:1px solid #e1e9ee;border-radius:23px;box-shadow:0 14px 36px #102a3a0d;padding:19px;margin-bottom:17px}
+h2{font-size:20px;letter-spacing:-.55px;color:#182b3e;font-weight:800}
+h3{color:#253a4d}
+.sub{color:#6a7d8e;font-size:12px}
+button{background:#0d7981;border-radius:14px;min-height:44px;font-weight:700;letter-spacing:-.1px;transition:transform .12s,box-shadow .2s,background .2s}
+button:active{transform:scale(.975)}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #61c6c7;outline-offset:2px}
+.secondary{background:#e3f4f2;color:#086f72}
+.soft{background:#edf2f5;color:#35495a}
+.danger{background:#feecea;color:#b14b47}
+input[type=range]{accent-color:#09878d}
+input[type=file]{background:#f7fafb;border:1px dashed #b5d5d6;border-radius:14px;padding:17px 12px;color:#3b5266}
+input[type=text],select{border:1px solid #d8e4e8;background:#fbfcfd;border-radius:12px;min-height:45px;color:#263b4d}
+.warning{background:#fff9eb;border-color:#f0e4c9;color:#8a6732}
+.note{background:#f4fafb;border-color:#e1eff0;color:#395963}
+.status{color:#117981}
+.workspaceHead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.workspaceHead h2{margin:0 0 4px}
+.workspaceCount{background:#ecf7f6;border:1px solid #d6eeed;color:#0c8080;font-weight:750;border-radius:99px;padding:7px 11px;font-variant-numeric:tabular-nums}
+.studioWorkspace{padding:14px}
+.thumbStrip{gap:10px;padding:4px 2px 15px}
+.thumb{width:74px;height:74px;flex-basis:74px;border-radius:17px;border:2px solid transparent;background:#f4f7f8;box-shadow:0 2px 7px #142e370c}
+.thumb.selected{border-color:#0c8d90;box-shadow:0 0 0 3px #c3e9e7}
+.thumb span{background:#183b4ddd}
+.photo{border:0;padding:0;margin:0}
+.photo>h3{font-size:12px;font-weight:650;letter-spacing:.1px;color:#718296;margin:1px 0 10px}
+.comparison{height:auto;aspect-ratio:4/5;max-height:65vh;border:1px solid #e0e8ed;border-radius:22px;box-shadow:inset 0 0 0 1px #fff,0 7px 20px #0e303810;background:repeating-conic-gradient(#edf2f4 0% 25%,#fff 0% 50%) 50%/20px 20px}
+.comparison .line{background:#0f9597;box-shadow:0 0 0 1px white,0 0 8px #13777b55;width:3px}
+.comparisonInput{height:26px;margin-top:13px!important}
+.toolbarTitle{font-size:12px;font-weight:850;letter-spacing:1.2px;text-transform:uppercase;color:#536b7e;margin:18px 0 10px;border-top:1px solid #edf1f3;padding-top:17px}
+.photo>.toolbarTitle+.row{gap:8px}
+.photo>.toolbarTitle+.row button{font-size:12px;border:1px solid #d5e5e7;min-height:50px}
+.photo>.toolbarTitle+.row button:first-child{background:#ddf5ef;color:#086c70}
+.adjustPanel{background:#f7fafb;border:1px solid #e1e8ed;border-radius:16px;padding:13px;margin:13px 0}
+.adjustPanel summary{font-size:14px;font-weight:750;color:#234c5b}
+.range{color:#63788a}
+#shareAllPhotos{background:linear-gradient(120deg,#087e85,#1ba5a1);color:white;font-size:15px;min-height:54px;border-radius:15px;box-shadow:0 8px 18px #0e878b2e}
+#downloadZip{background:#edf4f6;color:#214758}
+#downloadAll{background:#e8f2f4;color:#245c63}
+#downloadStatus{font-size:12px;color:#0c7980}
+#workspace{border:1px solid #dce9ed}
+#photos .row button{border-radius:13px}
+#photos details:not(.adjustPanel){background:#f6f9fa;border:1px solid #e7edf0;border-radius:13px;padding:11px;color:#617587}
+#photos details:not(.adjustPanel) summary{font-size:12px;font-weight:700}
+footer{font-size:11px;color:#8794a1;padding-bottom:18px}
+@media(min-width:650px){.comparison{aspect-ratio:4/3;max-height:600px}.studioWorkspace{padding:22px}}
+@media(max-width:420px){.card{padding:15px;border-radius:20px}.studioWorkspace{padding:12px}.comparison{max-height:56vh}.photo .row button{padding:12px 8px;font-size:12px}header h1{font-size:21px}}
 </style>
 </head>
 <body>
 <header>
   <h1>Vinted Photo Studio</h1>
-  <p>v1.8 · Migliora foto · Pulisci sfondo · Rimuovi sfondo · Download</p>
+  <p>v1.9 · Migliora foto · Pulisci sfondo · Rimuovi sfondo · Download</p>
 </header>
 <main>
   <section class="card">
@@ -166,7 +222,7 @@ main{padding-top:18px}
     <p id="downloadStatus" class="progress"></p>
     <p class="small">Su iPhone, se Safari blocca più download consecutivi, usa lo ZIP.</p>
   </section>
-  <footer>Vinted Photo Studio v1.8 · versione focalizzata sulle immagini</footer>
+  <footer>Vinted Photo Studio v1.9 · versione focalizzata sulle immagini</footer>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script type="module">
@@ -383,7 +439,7 @@ $('#shareAllPhotos').onclick=async()=>{
    if(!window.JSZip)throw Error('Libreria ZIP non disponibile. Usa «Salva nel rullino» sotto ciascuna foto.');
    const zip=new JSZip();outputs.forEach(o=>zip.file(o.name,o.blob));
    const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});
-   triggerDownload(blob,'vinted-foto-v1-8.zip');
+   triggerDownload(blob,'vinted-foto-v1-9.zip');
    st.textContent='ZIP scaricato come alternativa: aprilo in File per gestire le immagini.';
  }catch(e){st.textContent='Impossibile salvare tutte le foto: '+(e.message||e);}
  finally{button.disabled=false;button.textContent='Salva tutte nel rullino';}
