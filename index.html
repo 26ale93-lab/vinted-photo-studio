@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b756b">
-<title>Vinted Photo Studio — iPhone v1.7</title>
+<title>Vinted Photo Studio — iPhone v1.8</title>
 <style>
 :root{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f3f6f5;color:#1b2e2c}
 *{box-sizing:border-box}body{margin:0;background:#f3f6f5}
@@ -25,7 +25,7 @@ input[type=file]{width:100%;font-size:14px}input[type=range]{width:100%;accent-c
 .list{padding-left:18px;margin:8px 0;font-size:12px;color:#516661;line-height:1.5}.small{font-size:11px;color:#6b7d79}.stack{display:grid;gap:8px}.toolbarTitle{font-size:13px;font-weight:700;color:#35534d;margin:10px 0 4px}
 footer{padding:20px 0 10px;text-align:center;color:#667b76;font-size:12px}
 
-/* Studio Light — interface v1.7 */
+/* Studio Light — interface v1.8 */
 :root{--ink:#19342f;--teal:#087b71;--line:#dae8e3}
 body{background:#edf2f0;color:var(--ink)}
 header{background:#fff;color:var(--ink);padding:calc(16px + env(safe-area-inset-top)) 18px 18px;border-bottom:1px solid var(--line)}
@@ -62,7 +62,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 @media(min-width:700px){.comparison{aspect-ratio:4/3;max-height:580px}}
 
 
-/* v1.7: professional mobile studio */
+/* v1.8: professional mobile studio */
 :root{--brand:#087d72;--ink:#18302c;--muted:#657a74}
 header{position:sticky;top:0;z-index:30;box-shadow:0 5px 22px #203e3509;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);background:#fefefef0}
 header:before{content:'STUDIO EDITION';font-size:9px;font-weight:850;letter-spacing:2.4px;color:#36887a;display:block;margin-bottom:5px}
@@ -89,7 +89,7 @@ main{padding-top:18px}
 <body>
 <header>
   <h1>Vinted Photo Studio</h1>
-  <p>v1.7 · Migliora foto · Pulisci sfondo · Rimuovi sfondo · Download</p>
+  <p>v1.8 · Migliora foto · Pulisci sfondo · Rimuovi sfondo · Download</p>
 </header>
 <main>
   <section class="card">
@@ -155,7 +155,10 @@ main{padding-top:18px}
 
   <section class="card">
     <h2>4. Salva le foto</h2>
-    <p class="sub">Usa «Salva nel rullino» sotto ogni foto per aprire il menu iOS e scegliere «Salva immagine». Restano disponibili anche download singolo e ZIP.</p>
+    <p class="sub">Usa «Salva tutte nel rullino» per condividere le foto elaborate insieme con iOS. Scegli «Salva immagini» nel menu, se disponibile. Puoi anche salvarle una alla volta oppure scaricare lo ZIP.</p>
+    <div class="row">
+      <button id="shareAllPhotos">Salva tutte nel rullino</button>
+    </div>
     <div class="row">
       <button id="downloadZip">Scarica ZIP</button>
       <button id="downloadAll" class="secondary">Salva singolarmente</button>
@@ -163,7 +166,7 @@ main{padding-top:18px}
     <p id="downloadStatus" class="progress"></p>
     <p class="small">Su iPhone, se Safari blocca più download consecutivi, usa lo ZIP.</p>
   </section>
-  <footer>Vinted Photo Studio v1.7 · versione focalizzata sulle immagini</footer>
+  <footer>Vinted Photo Studio v1.8 · versione focalizzata sulle immagini</footer>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script type="module">
@@ -353,6 +356,38 @@ $('#autoClean').onclick=()=>{ photos.forEach(applyDefaultClean); redraw(); };
 $('#clearAll').onclick=()=>{ if(!confirm('Eliminare tutte le foto dalla sessione?')) return; photos.forEach(cleanupItem); photos.length=0;activePhotoIndex=0; redraw(); };
 $('#cutBackground').onchange=()=>redraw();
 $('#applyNames').onclick=()=>applyNames();
+$('#shareAllPhotos').onclick=async()=>{
+ const button=$('#shareAllPhotos'),st=$('#downloadStatus');
+ if(!photos.length){st.textContent='Carica almeno una fotografia.';return;}
+ button.disabled=true;button.textContent='Preparo le fotografie…';
+ try{
+   const outputs=[];
+   for(let i=0;i<photos.length;i++){
+     st.textContent='Preparo foto '+(i+1)+' di '+photos.length+'…';
+     const out=await getOutput(photos[i],i);
+     if(!out.blob)throw Error('Immagine '+(i+1)+' non esportabile');
+     outputs.push(out);
+   }
+   const files=outputs.map(o=>new File([o.blob],o.name,{type:o.blob.type||'image/jpeg'}));
+   // Apple Safari may reject sharing files after a lengthy asynchronous preparation.
+   if(navigator.share&&navigator.canShare&&navigator.canShare({files})){
+     try{
+       await navigator.share({files});
+       st.textContent='Condivisione avviata. Nel menu iOS scegli «Salva immagini», se disponibile.';
+       return;
+     }catch(err){
+       if(err?.name==='AbortError'){st.textContent='Condivisione annullata.';return;}
+       st.textContent='Condivisione multipla non riuscita. Creo lo ZIP alternativo…';
+     }
+   }else{st.textContent='Questo browser non supporta la condivisione di più foto. Creo lo ZIP…';}
+   if(!window.JSZip)throw Error('Libreria ZIP non disponibile. Usa «Salva nel rullino» sotto ciascuna foto.');
+   const zip=new JSZip();outputs.forEach(o=>zip.file(o.name,o.blob));
+   const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});
+   triggerDownload(blob,'vinted-foto-v1-8.zip');
+   st.textContent='ZIP scaricato come alternativa: aprilo in File per gestire le immagini.';
+ }catch(e){st.textContent='Impossibile salvare tutte le foto: '+(e.message||e);}
+ finally{button.disabled=false;button.textContent='Salva tutte nel rullino';}
+};
 $('#downloadAll').onclick=async()=>{ for(let i=0;i<photos.length;i++){ const out=await getOutput(photos[i],i); triggerDownload(out.blob,out.name);} };
 $('#downloadZip').onclick=async()=>{ const st=$('#downloadStatus'); if(!photos.length){ st.textContent='Carica almeno una foto.'; return; } if(!window.JSZip){ st.textContent='Libreria ZIP non disponibile.'; return; } try{ const zip=new JSZip(); for(let i=0;i<photos.length;i++){ st.textContent=`Preparo immagine ${i+1} di ${photos.length}…`; const out=await getOutput(photos[i],i); zip.file(out.name,out.blob); } st.textContent='Creo archivio ZIP…'; const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}}); triggerDownload(blob,'vinted-photos-v1-5.zip'); st.textContent='ZIP pronto.'; } catch(e){ st.textContent='Errore ZIP: '+e.message; } };
 </script>
