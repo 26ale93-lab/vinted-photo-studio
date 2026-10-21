@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b756b">
-<title>Vinted Photo Studio — iPhone v1.3</title>
+<title>Vinted Photo Studio — iPhone v1.4</title>
 <style>
 :root{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f3f6f5;color:#1b2e2c}
 *{box-sizing:border-box}body{margin:0;background:#f3f6f5}
@@ -29,7 +29,7 @@ footer{padding:20px 0 10px;text-align:center;color:#667b76;font-size:12px}
 <body>
 <header>
   <h1>Vinted Photo Studio</h1>
-  <p>v1.3 · Migliora foto · Pulisci sfondo · Rimuovi sfondo · Download</p>
+  <p>v1.4 · Migliora foto · Pulisci sfondo · Rimuovi sfondo · Download</p>
 </header>
 <main>
   <section class="card">
@@ -90,8 +90,8 @@ footer{padding:20px 0 10px;text-align:center;color:#667b76;font-size:12px}
   <section id="photos"></section>
 
   <section class="card">
-    <h2>4. Scarica le foto</h2>
-    <p class="sub">Esportazione singola o ZIP. PNG se usi sfondo trasparente con scontorno, altrimenti JPEG.</p>
+    <h2>4. Salva le foto</h2>
+    <p class="sub">Usa «Salva nel rullino» sotto ogni foto per aprire il menu iOS e scegliere «Salva immagine». Restano disponibili anche download singolo e ZIP.</p>
     <div class="row">
       <button id="downloadZip">Scarica ZIP</button>
       <button id="downloadAll" class="secondary">Salva singolarmente</button>
@@ -99,7 +99,7 @@ footer{padding:20px 0 10px;text-align:center;color:#667b76;font-size:12px}
     <p id="downloadStatus" class="progress"></p>
     <p class="small">Su iPhone, se Safari blocca più download consecutivi, usa lo ZIP.</p>
   </section>
-  <footer>Vinted Photo Studio v1.3 · versione focalizzata sulle immagini</footer>
+  <footer>Vinted Photo Studio v1.4 · versione focalizzata sulle immagini</footer>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script type="module">
@@ -177,7 +177,7 @@ function redraw(){ const root=$('#photos'); root.replaceChildren(); $('#total').
  const cleanRange=document.createElement('input');cleanRange.type='range';cleanRange.min=20;cleanRange.max=100;cleanRange.value=item.cleanStrength??85;cleanRange.oninput=()=>{item.cleanStrength=Number(cleanRange.value);ciValue.textContent=cleanRange.value+'%';refresh();};sec.append(cleanRange);
  const status=document.createElement('div'); status.className='progress'; sec.append(status); const info=document.createElement('div'); info.className='small'; info.textContent='Controlla sempre che prodotto, colore e difetti reali restino fedeli.'; sec.append(info); const actions1=document.createElement('div'); actions1.className='row'; const improve=document.createElement('button'); improve.className='secondary'; improve.textContent='Migliora foto'; improve.onclick=()=>{ item.mode='improve'; item.status='Correzione fotografica naturale applicata.'; refresh(); }; const clean=document.createElement('button'); clean.className='secondary'; clean.textContent='Pulisci sfondo'; clean.onclick=()=>{ item.mode='clean'; item.status='Sfondo chiaro uniformato e ripulito.'; item.cleanMask=null; refresh(); }; const precise=document.createElement('button');precise.className='secondary';precise.textContent='Pulizia precisa AI';
  precise.onclick=async()=>{precise.disabled=true;try{await removeBackgroundAI(drawBasePhoto(item),item,status);item.mode='clean';item.status='Pulizia AI attivata. Controlla i bordi del prodotto.';refresh();}catch(e){item.status='Pulizia AI non disponibile: '+e.message;status.textContent=item.status;}finally{precise.disabled=false;}};
- const cut=document.createElement('button'); cut.textContent='Rimuovi sfondo'; cut.onclick=async()=>{ cut.disabled=true; try{ item.mode='cut'; const base=drawBasePhoto(item); await removeBackgroundAI(base,item,status); item.status='Sfondo rimosso. Controlla bene i bordi.'; refresh(); } catch(e){ item.mode='improve'; item.status='Errore scontorno: '+e.message; status.textContent=item.status; } finally { cut.disabled=false; } }; actions1.append(improve,clean,precise,cut); sec.append(actions1); const actions2=document.createElement('div'); actions2.className='row'; const reset=document.createElement('button'); reset.className='soft'; reset.textContent='Ripristina automatico'; reset.onclick=()=>{ applyDefaultImprove(item); refresh(); }; const moveUp=document.createElement('button'); moveUp.className='soft'; moveUp.textContent='Sposta su'; moveUp.onclick=()=>{ if(i===0) return; [photos[i-1],photos[i]]=[photos[i],photos[i-1]]; redraw(); }; const moveDown=document.createElement('button'); moveDown.className='soft'; moveDown.textContent='Sposta giù'; moveDown.onclick=()=>{ if(i===photos.length-1) return; [photos[i+1],photos[i]]=[photos[i],photos[i+1]]; redraw(); }; const copy=document.createElement('button');copy.className='secondary';copy.textContent='Copia regolazioni su tutte';copy.onclick=()=>{if(!confirm('Copiare le regolazioni di questa foto sulle altre?'))return;photos.forEach(p=>{if(p!==item){p.settings={...item.settings};p.crop=item.crop;p.cleanStrength=item.cleanStrength;p.cleanMask=null;}});redraw();};actions2.append(reset,moveUp,moveDown,copy); sec.append(actions2); const actions3=document.createElement('div'); actions3.className='row'; const download=document.createElement('button'); download.className='soft'; download.textContent='Scarica questa foto'; download.onclick=async()=>{ const out=await getOutput(item,i); triggerDownload(out.blob,out.name); }; const removeBtn=document.createElement('button'); removeBtn.className='danger'; removeBtn.textContent='Elimina questa foto'; removeBtn.onclick=()=>{ cleanupItem(item); photos.splice(i,1); redraw(); }; actions3.append(download,removeBtn); sec.append(actions3); root.append(sec); refresh(); }); }
+ const cut=document.createElement('button'); cut.textContent='Rimuovi sfondo'; cut.onclick=async()=>{ cut.disabled=true; try{ item.mode='cut'; const base=drawBasePhoto(item); await removeBackgroundAI(base,item,status); item.status='Sfondo rimosso. Controlla bene i bordi.'; refresh(); } catch(e){ item.mode='improve'; item.status='Errore scontorno: '+e.message; status.textContent=item.status; } finally { cut.disabled=false; } }; actions1.append(improve,clean,precise,cut); sec.append(actions1); const actions2=document.createElement('div'); actions2.className='row'; const reset=document.createElement('button'); reset.className='soft'; reset.textContent='Ripristina automatico'; reset.onclick=()=>{ applyDefaultImprove(item); refresh(); }; const moveUp=document.createElement('button'); moveUp.className='soft'; moveUp.textContent='Sposta su'; moveUp.onclick=()=>{ if(i===0) return; [photos[i-1],photos[i]]=[photos[i],photos[i-1]]; redraw(); }; const moveDown=document.createElement('button'); moveDown.className='soft'; moveDown.textContent='Sposta giù'; moveDown.onclick=()=>{ if(i===photos.length-1) return; [photos[i+1],photos[i]]=[photos[i],photos[i+1]]; redraw(); }; const copy=document.createElement('button');copy.className='secondary';copy.textContent='Copia regolazioni su tutte';copy.onclick=()=>{if(!confirm('Copiare le regolazioni di questa foto sulle altre?'))return;photos.forEach(p=>{if(p!==item){p.settings={...item.settings};p.crop=item.crop;p.cleanStrength=item.cleanStrength;p.cleanMask=null;}});redraw();};actions2.append(reset,moveUp,moveDown,copy); sec.append(actions2); const actions3=document.createElement('div'); actions3.className='row'; const download=document.createElement('button'); download.className='soft'; download.textContent='Scarica questa foto'; download.onclick=async()=>{ const out=await getOutput(item,i); triggerDownload(out.blob,out.name); }; const removeBtn=document.createElement('button'); removeBtn.className='danger'; removeBtn.textContent='Elimina questa foto'; removeBtn.onclick=()=>{ cleanupItem(item); photos.splice(i,1); redraw(); }; const toPhotos=document.createElement('button');toPhotos.textContent='Salva nel rullino';toPhotos.onclick=()=>shareImageToPhotos(item,i,toPhotos); actions3.append(toPhotos,download,removeBtn); sec.append(actions3); root.append(sec); refresh(); }); }
 function cleanupItem(item){ try{ URL.revokeObjectURL(item.url); }catch{} try{ if(item.aiMaskUrl) URL.revokeObjectURL(item.aiMaskUrl);}catch{} }
 function applyDefaultImprove(item){
  const cv=makeCanvas(160,160),cx=cv.getContext('2d',{willReadFrequently:true});cx.drawImage(item.img,0,0,160,160);
@@ -190,6 +190,39 @@ function applyDefaultImprove(item){
  item.status='Correzioni adattate alla luminosità della foto. Controlla il colore reale.';
 }
 function applyDefaultClean(item){ if(item.settings.brightness===100&&item.settings.contrast===100&&item.settings.sharp===0) applyDefaultImprove(item); item.mode='clean'; item.cleanMask=null; item.status='Sfondo chiaro uniformato e ripulito.'; }
+async function shareImageToPhotos(item,index,button){
+ button.disabled=true;
+ const prev=button.textContent;button.textContent='Preparo immagine…';
+ try{
+   const out=await getOutput(item,index);
+   if(!out.blob)throw Error('Immagine non disponibile');
+   const file=new File([out.blob],out.name,{type:out.blob.type||'image/jpeg'});
+   if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+     try{
+       await navigator.share({files:[file]});
+       return;
+     }catch(err){
+       if(err && err.name==='AbortError')return;
+       // In Safari/PWA alcune condizioni impediscono la condivisione dei file.
+     }
+   }
+   showImageSavePanel(out.blob);
+ }catch(err){alert('Impossibile preparare la fotografia: '+(err.message||err));}
+ finally{button.disabled=false;button.textContent=prev;}
+}
+function showImageSavePanel(blob){
+ const url=URL.createObjectURL(blob);
+ const shade=document.createElement('div');
+ shade.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px';
+ const message=document.createElement('div');
+ message.textContent='Tieni premuto sulla foto e scegli «Salva in Foto» o «Aggiungi a Foto».';
+ message.style.cssText='background:white;border-radius:12px;padding:12px;max-width:410px;font-size:14px;text-align:center;color:#132924';
+ const image=document.createElement('img');image.src=url;image.alt='Immagine pronta per il rullino';
+ image.style.cssText='max-width:100%;max-height:70vh;object-fit:contain;border-radius:10px;background:white;-webkit-touch-callout:default';
+ const close=document.createElement('button');close.textContent='Chiudi anteprima';
+ const dismiss=()=>{shade.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+ close.onclick=dismiss;shade.append(message,image,close);document.body.append(shade);
+}
 function triggerDownload(blob,name){ const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.append(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),30000); }
 function safeSlug(s){ return (s||'vinted').toLowerCase().trim().replace(/[^a-z0-9àèéìòù_-]+/gi,'-').replace(/-+/g,'-').replace(/^[-]+|[-]+$/g,'') || 'vinted'; }
 async function getOutput(item,index){ const canvas=renderFinal(item); const png=item.mode==='cut' && $('#cutBackground').value==='transparent' && item.aiMaskImg; const blob=await canvasToBlob(canvas,png?'image/png':'image/jpeg',.94); const modeSuffix=item.mode==='clean'?'clean':(item.mode==='cut'?'cut':'photo'); const ext=png?'png':'jpg'; const prefix=safeSlug($('#filePrefix').value||'vinted'); const label=safeSlug(item.label || guessLabel(index,photos.length)); const num=String(index+1).padStart(2,'0'); return {blob,name:`${prefix}_${num}_${label}_${modeSuffix}.${ext}`}; }
@@ -200,7 +233,7 @@ $('#clearAll').onclick=()=>{ if(!confirm('Eliminare tutte le foto dalla sessione
 $('#cutBackground').onchange=()=>redraw();
 $('#applyNames').onclick=()=>applyNames();
 $('#downloadAll').onclick=async()=>{ for(let i=0;i<photos.length;i++){ const out=await getOutput(photos[i],i); triggerDownload(out.blob,out.name);} };
-$('#downloadZip').onclick=async()=>{ const st=$('#downloadStatus'); if(!photos.length){ st.textContent='Carica almeno una foto.'; return; } if(!window.JSZip){ st.textContent='Libreria ZIP non disponibile.'; return; } try{ const zip=new JSZip(); for(let i=0;i<photos.length;i++){ st.textContent=`Preparo immagine ${i+1} di ${photos.length}…`; const out=await getOutput(photos[i],i); zip.file(out.name,out.blob); } st.textContent='Creo archivio ZIP…'; const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}}); triggerDownload(blob,'vinted-photos-v1-3.zip'); st.textContent='ZIP pronto.'; } catch(e){ st.textContent='Errore ZIP: '+e.message; } };
+$('#downloadZip').onclick=async()=>{ const st=$('#downloadStatus'); if(!photos.length){ st.textContent='Carica almeno una foto.'; return; } if(!window.JSZip){ st.textContent='Libreria ZIP non disponibile.'; return; } try{ const zip=new JSZip(); for(let i=0;i<photos.length;i++){ st.textContent=`Preparo immagine ${i+1} di ${photos.length}…`; const out=await getOutput(photos[i],i); zip.file(out.name,out.blob); } st.textContent='Creo archivio ZIP…'; const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}}); triggerDownload(blob,'vinted-photos-v1-4.zip'); st.textContent='ZIP pronto.'; } catch(e){ st.textContent='Errore ZIP: '+e.message; } };
 </script>
 </body>
 </html>
