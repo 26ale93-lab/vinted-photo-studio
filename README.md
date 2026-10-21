@@ -1,4 +1,4 @@
-# Vinted Photo Studio v1.7 — Studio Light
+# Vinted Photo Studio v1.8 — Studio Light
 
 App web iPhone: https://26ale93-lab.github.io/vinted-photo-studio/
 
@@ -10,3 +10,7 @@ App web iPhone: https://26ale93-lab.github.io/vinted-photo-studio/
 
 ## Limitazioni
 La separazione è affidabile solo quanto la segmentazione AI: bordi fini e prodotti chiari possono essere classificati male. Senza maschera AI gli stili si applicano all'intera foto. Verificare sempre fedeltà dei colori, loghi, condizioni e difetti del prodotto. La condivisione Safari richiede un'azione dell'utente per salvare nel rullino. Collaudo Safari iPhone da completare.
+
+
+## v1.8 — salvataggio multiplo nel rullino
+Nella sezione «4. Salva le foto» è presente il pulsante **Salva tutte nel rullino**. Prepara le singole immagini elaborate e prova ad aprire il menu di condivisione iOS con tutti i file. Se Safari non supporta la condivisione multipla, offre automaticamente un archivio ZIP. Il salvataggio nell'app Foto richiede una conferma manuale dell'utente. La preparazione asincrona dei file può far perdere l'autorizzazione temporanea del gesto di Safari: funzione da verificare su iPhone reale.
