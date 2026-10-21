@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b756b">
-<title>Vinted Photo Studio — iPhone v1.6</title>
+<title>Vinted Photo Studio — iPhone v1.7</title>
 <style>
 :root{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f3f6f5;color:#1b2e2c}
 *{box-sizing:border-box}body{margin:0;background:#f3f6f5}
@@ -25,7 +25,7 @@ input[type=file]{width:100%;font-size:14px}input[type=range]{width:100%;accent-c
 .list{padding-left:18px;margin:8px 0;font-size:12px;color:#516661;line-height:1.5}.small{font-size:11px;color:#6b7d79}.stack{display:grid;gap:8px}.toolbarTitle{font-size:13px;font-weight:700;color:#35534d;margin:10px 0 4px}
 footer{padding:20px 0 10px;text-align:center;color:#667b76;font-size:12px}
 
-/* Studio Light — interface v1.6 */
+/* Studio Light — interface v1.7 */
 :root{--ink:#19342f;--teal:#087b71;--line:#dae8e3}
 body{background:#edf2f0;color:var(--ink)}
 header{background:#fff;color:var(--ink);padding:calc(16px + env(safe-area-inset-top)) 18px 18px;border-bottom:1px solid var(--line)}
@@ -61,12 +61,35 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 #photos .comparison + input{margin-top:13px}
 @media(min-width:700px){.comparison{aspect-ratio:4/3;max-height:580px}}
 
+
+/* v1.7: professional mobile studio */
+:root{--brand:#087d72;--ink:#18302c;--muted:#657a74}
+header{position:sticky;top:0;z-index:30;box-shadow:0 5px 22px #203e3509;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);background:#fefefef0}
+header:before{content:'STUDIO EDITION';font-size:9px;font-weight:850;letter-spacing:2.4px;color:#36887a;display:block;margin-bottom:5px}
+header h1{font-weight:800;letter-spacing:-.85px}
+main{padding-top:18px}
+.card{box-shadow:0 9px 36px #183c3510;background:#fff}
+.workspaceHead h2{font-size:20px}
+.thumbStrip{padding-top:7px;padding-bottom:14px}
+.thumb{border-radius:15px;flex-basis:72px;width:72px;height:72px}
+.photo>h3{color:#647a73;font-size:12px}
+.comparison{box-shadow:inset 0 0 0 1px #e3ebe8;border-radius:19px;background:repeating-conic-gradient(#edf0ee 0% 25%,#f8faf9 0% 50%) 50%/16px 16px}
+.comparisonInput{height:28px}
+.photo .toolbarTitle{border-top:1px solid #ebf0ee;padding-top:15px;letter-spacing:.3px;color:#1c544b}
+.photo .toolbarTitle + .row button{border:1px solid #dce8e4;font-weight:750}
+.photo .toolbarTitle + .row button:focus{outline-color:#60bfb0}
+#photos .photo>div.row button{border-radius:13px}
+#photos .photo>div.row button:active{transform:scale(.97)}
+#photos .photo>div.row button:first-child{font-weight:800}
+#downloadZip{min-height:48px}
+#downloadStatus{min-height:18px}
+@media(max-width:460px){.studioWorkspace{padding:12px}.comparison{max-height:55vh}.photo .row button{font-size:12px;padding:12px 8px}}
 </style>
 </head>
 <body>
 <header>
   <h1>Vinted Photo Studio</h1>
-  <p>v1.6 · Migliora foto · Pulisci sfondo · Rimuovi sfondo · Download</p>
+  <p>v1.7 · Migliora foto · Pulisci sfondo · Rimuovi sfondo · Download</p>
 </header>
 <main>
   <section class="card">
@@ -140,7 +163,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
     <p id="downloadStatus" class="progress"></p>
     <p class="small">Su iPhone, se Safari blocca più download consecutivi, usa lo ZIP.</p>
   </section>
-  <footer>Vinted Photo Studio v1.6 · versione focalizzata sulle immagini</footer>
+  <footer>Vinted Photo Studio v1.7 · versione focalizzata sulle immagini</footer>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script type="module">
@@ -199,7 +222,24 @@ function cleanBackground(baseCanvas,item){
 }
 async function removeBackgroundAI(baseCanvas,item,statusEl){ if(item.aiMaskImg) return item.aiMaskImg; statusEl.textContent='Caricamento modello e rimozione dello sfondo…'; const mod=await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm'); const removeBackground=mod.default || mod.removeBackground; if(!removeBackground) throw new Error('Modulo AI non disponibile'); const scale=Math.min(1,1600/baseCanvas.width,1600/baseCanvas.height); const rw=Math.max(1,Math.round(baseCanvas.width*scale)), rh=Math.max(1,Math.round(baseCanvas.height*scale)); const reduced=makeCanvas(rw,rh); reduced.getContext('2d').drawImage(baseCanvas,0,0,rw,rh); const reducedBlob=await canvasToBlob(reduced,'image/png'); const resultBlob=await removeBackground(reducedBlob); const url=URL.createObjectURL(resultBlob); const maskImg=await loadImage(url); item.aiMaskImg=maskImg; item.aiMaskUrl=url; return maskImg; }
 function composeCutout(baseCanvas,maskImg,bgMode){ const w=baseCanvas.width,h=baseCanvas.height; const out=makeCanvas(w,h); const ctx=out.getContext('2d',{willReadFrequently:true}); ctx.drawImage(baseCanvas,0,0); const maskLayer=makeCanvas(w,h); const mctx=maskLayer.getContext('2d'); mctx.drawImage(maskImg,0,0,w,h); const maskData=mctx.getImageData(0,0,w,h); const imageData=ctx.getImageData(0,0,w,h); for(let i=0;i<imageData.data.length;i+=4) imageData.data[i+3]=maskData.data[i+3]; ctx.putImageData(imageData,0,0); if(bgMode==='transparent') return out; if(bgMode==='original') return baseCanvas; const comp=makeCanvas(w,h); const cctx=comp.getContext('2d'); cctx.fillStyle=bgMode==='white'?'#ffffff':'#f2f3f3'; cctx.fillRect(0,0,w,h); cctx.drawImage(out,0,0); return comp; }
-function renderFinal(item){ const base=drawBasePhoto(item); if(item.mode==='clean') return cropCanvas(cleanBackground(base,item),item); if(item.mode==='cut' && item.aiMaskImg) return cropCanvas(composeCutout(base,item.aiMaskImg,$('#cutBackground').value),item); return cropCanvas(base,item); }
+function renderFinal(item){
+ const edited=drawBasePhoto(item);
+ if(item.aiMaskImg && (item.mode==='clean'||item.mode==='cut')){
+   const untouched=makeCanvas(edited.width,edited.height);
+   untouched.getContext('2d').drawImage(item.img,0,0,edited.width,edited.height);
+   // Pixel processing is independent: photo presets affect the product, and background remains original before cleaning/replacement.
+   const mask=makeCanvas(edited.width,edited.height),mx=mask.getContext('2d');
+   mx.drawImage(item.aiMaskImg,0,0,mask.width,mask.height);
+   const alpha=mx.getImageData(0,0,mask.width,mask.height);
+   const d=alpha.data,raw=untouched.getContext('2d').getImageData(0,0,mask.width,mask.height);
+   const out=edited.getContext('2d').getImageData(0,0,mask.width,mask.height);
+   for(let p=0;p<d.length;p+=4){const a=d[p+3]/255;for(let k=0;k<3;k++)out.data[p+k]=out.data[p+k]*a+raw.data[p+k]*(1-a);}
+   edited.getContext('2d').putImageData(out,0,0);
+ }
+ if(item.mode==='clean')return cropCanvas(cleanBackground(edited,item),item);
+ if(item.mode==='cut'&&item.aiMaskImg)return cropCanvas(composeCutout(edited,item.aiMaskImg,$('#cutBackground').value),item);
+ return cropCanvas(edited,item);
+}
 function previewDataUrl(item){ const c=renderFinal(item); const png=item.mode==='cut' && $('#cutBackground').value==='transparent' && item.aiMaskImg; return c.toDataURL(png?'image/png':'image/jpeg',.86); }
 function makeSlider(item,key,label,min,max,parent,onChange){ const row=document.createElement('label'); row.className='range'; const left=document.createElement('span'); left.textContent=label; const right=document.createElement('span'); right.textContent=item.settings[key]; row.append(left,right); parent.append(row); const range=document.createElement('input'); range.type='range'; range.min=min; range.max=max; range.value=item.settings[key]; range.oninput=()=>{ item.settings[key]=Number(range.value); right.textContent=range.value; item.cleanMask=null; onChange(); }; parent.append(range); }
 function modeBadges(item){ const wrap=document.createElement('div'); const map={ improve:['Migliora foto','badge-ok'], clean:['Pulisci sfondo','badge-warn'], cut:['Rimuovi sfondo','badge-soft'] }; Object.entries(map).forEach(([key,[txt,cls]])=>{ const b=document.createElement('span'); b.className='badge '+cls; b.textContent=item.mode===key ? 'Modalità attiva: '+txt : txt; wrap.append(b); }); return wrap; }
@@ -227,7 +267,7 @@ function redraw(){
  const hint=document.createElement('div');hint.className='small';hint.textContent='Sposta il cursore per confrontare originale e risultato';sec.append(hint);
  let previewTimer;
  const refresh=()=>{clearTimeout(previewTimer);previewTimer=setTimeout(()=>{try{edited.src=previewDataUrl(item);}catch(e){status.textContent='Anteprima non disponibile: '+e.message;}},160);status.textContent=item.status||'';const newBadges=modeBadges(item);badges.replaceWith(newBadges);badges=newBadges;};
- const adjustDetails=document.createElement('details');adjustDetails.className='adjustPanel';const adjustSummary=document.createElement('summary');adjustSummary.textContent='Regolazioni avanzate';adjustDetails.append(adjustSummary);sec.append(adjustDetails);
+ const adjustDetails=document.createElement('details');adjustDetails.className='adjustPanel';const adjustSummary=document.createElement('summary');adjustSummary.textContent='Regolazioni manuali · prodotto e sfondo';adjustDetails.append(adjustSummary);sec.append(adjustDetails);
  const labelWrap=document.createElement('div'); labelWrap.className='stack'; const labelTitle=document.createElement('div'); labelTitle.className='sub'; labelTitle.textContent='Etichetta file esportato'; const labelInput=document.createElement('select'); ['fronte','retro','lato','dettaglio','etichetta','suola','difetto','altro'].forEach(v=>{let o=document.createElement('option');o.value=v;o.textContent=v[0].toUpperCase()+v.slice(1);labelInput.append(o);}); labelInput.value=['fronte','retro','lato','dettaglio','etichetta','suola','difetto','altro'].includes(item.label)?item.label:'altro'; item.label=labelInput.value; labelInput.onchange=()=> item.label=labelInput.value; labelWrap.append(labelTitle,labelInput); adjustDetails.append(labelWrap); makeSlider(item,'brightness','Luminosità',65,140,adjustDetails,refresh); makeSlider(item,'contrast','Contrasto',70,135,adjustDetails,refresh); makeSlider(item,'saturate','Saturazione',70,130,adjustDetails,refresh); makeSlider(item,'warmth','Temperatura',-50,50,adjustDetails,refresh); makeSlider(item,'sharp','Nitidezza',0,35,adjustDetails,refresh); const cr=document.createElement('label');cr.className='range';cr.innerHTML='<span>Ritaglio margini</span>';const cv=document.createElement('span');cv.textContent=(item.crop||0)+'%';cr.append(cv);adjustDetails.append(cr);const ci=document.createElement('input');ci.type='range';ci.min='0';ci.max='18';ci.value=item.crop||0;ci.oninput=()=>{item.crop=Number(ci.value);cv.textContent=ci.value+'%';refresh();};adjustDetails.append(ci); const ciLabel=document.createElement('label');ciLabel.className='range';ciLabel.innerHTML='<span>Intensità pulizia sfondo</span>';const ciValue=document.createElement('span');ciValue.textContent=(item.cleanStrength??85)+'%';ciLabel.append(ciValue);adjustDetails.append(ciLabel);
  const cleanRange=document.createElement('input');cleanRange.type='range';cleanRange.min=20;cleanRange.max=100;cleanRange.value=item.cleanStrength??85;cleanRange.oninput=()=>{item.cleanStrength=Number(cleanRange.value);ciValue.textContent=cleanRange.value+'%';refresh();};adjustDetails.append(cleanRange);
  const status=document.createElement('div'); status.className='progress'; sec.append(status); const info=document.createElement('div'); info.className='small'; info.textContent='Controlla sempre che prodotto, colore e difetti reali restino fedeli.'; sec.append(info); const presets=document.createElement('div');presets.className='row';
@@ -254,7 +294,8 @@ function redraw(){
  };
  presets.append(b);
  });
- const presetTitle=document.createElement('div');presetTitle.className='toolbarTitle';presetTitle.textContent='Stile fotografico';sec.append(presetTitle,presets);
+ const presetTitle=document.createElement('div');presetTitle.className='toolbarTitle';presetTitle.textContent='01  ·  Aspetto del prodotto';sec.append(presetTitle,presets);
+ const bgTitle=document.createElement('div');bgTitle.className='toolbarTitle';bgTitle.textContent='02  ·  Sfondo';sec.append(bgTitle);
  const actions1=document.createElement('div'); actions1.className='row'; const improve=document.createElement('button'); improve.className='secondary'; improve.textContent='Migliora foto'; improve.onclick=()=>{ item.mode='improve'; item.status='Correzione fotografica naturale applicata.'; refresh(); }; const clean=document.createElement('button'); clean.className='secondary'; clean.textContent='Pulisci sfondo'; clean.onclick=()=>{ item.mode='clean'; item.status='Sfondo chiaro uniformato e ripulito.'; item.cleanMask=null; refresh(); }; const precise=document.createElement('button');precise.className='secondary';precise.textContent='Pulizia precisa AI';
  precise.onclick=async()=>{precise.disabled=true;try{await removeBackgroundAI(drawBasePhoto(item),item,status);item.mode='clean';item.status='Pulizia AI attivata. Controlla i bordi del prodotto.';refresh();}catch(e){item.status='Pulizia AI non disponibile: '+e.message;status.textContent=item.status;}finally{precise.disabled=false;}};
  const cut=document.createElement('button'); cut.textContent='Rimuovi sfondo'; cut.onclick=async()=>{ cut.disabled=true; try{ item.mode='cut'; const base=drawBasePhoto(item); await removeBackgroundAI(base,item,status); item.status='Sfondo rimosso. Controlla bene i bordi.'; refresh(); } catch(e){ item.mode='improve'; item.status='Errore scontorno: '+e.message; status.textContent=item.status; } finally { cut.disabled=false; } }; actions1.append(improve,precise,cut);const quickDetails=document.createElement('details');quickDetails.style.marginTop='9px';const summary=document.createElement('summary');summary.textContent='Altri strumenti: pulizia rapida';summary.style.fontSize='13px';summary.style.cursor='pointer';quickDetails.append(summary,clean);sec.append(actions1,quickDetails); const actions2=document.createElement('div'); actions2.className='row'; const reset=document.createElement('button'); reset.className='soft'; reset.textContent='Ripristina automatico'; reset.onclick=()=>{ applyDefaultImprove(item); refresh(); }; const moveUp=document.createElement('button'); moveUp.className='soft'; moveUp.textContent='Sposta su'; moveUp.onclick=()=>{ if(i===0) return; [photos[i-1],photos[i]]=[photos[i],photos[i-1]]; activePhotoIndex=i-1; redraw(); }; const moveDown=document.createElement('button'); moveDown.className='soft'; moveDown.textContent='Sposta giù'; moveDown.onclick=()=>{ if(i===photos.length-1) return; [photos[i+1],photos[i]]=[photos[i],photos[i+1]]; activePhotoIndex=i+1; redraw(); }; const copy=document.createElement('button');copy.className='secondary';copy.textContent='Copia regolazioni su tutte';copy.onclick=()=>{if(!confirm('Copiare le regolazioni di questa foto sulle altre?'))return;photos.forEach(p=>{if(p!==item){p.settings={...item.settings};p.crop=item.crop;p.cleanStrength=item.cleanStrength;p.cleanMask=null;}});redraw();};actions2.append(reset,moveUp,moveDown,copy); sec.append(actions2); const actions3=document.createElement('div'); actions3.className='row'; const download=document.createElement('button'); download.className='soft'; download.textContent='Scarica questa foto'; download.onclick=async()=>{ const out=await getOutput(item,i); triggerDownload(out.blob,out.name); }; const removeBtn=document.createElement('button'); removeBtn.className='danger'; removeBtn.textContent='Elimina questa foto'; removeBtn.onclick=()=>{ cleanupItem(item); photos.splice(i,1); activePhotoIndex=Math.min(i,photos.length-1); redraw(); }; const toPhotos=document.createElement('button');toPhotos.textContent='Salva nel rullino';toPhotos.onclick=()=>shareImageToPhotos(item,i,toPhotos); actions3.append(toPhotos,download,removeBtn);sec.append(actions3); root.append(sec); refresh(); }); }
