@@ -1,9 +1,20 @@
-# Vinted Photo Studio iPhone v1.2
+# Vinted Photo Studio per iPhone — v1.3
 
-Apri `index.html` tramite hosting HTTPS (ad esempio GitHub Pages) con Safari iPhone e aggiungilo alla schermata Home.
+Web app per correggere fotografie di prodotti e pulire o sostituire lo sfondo prima di caricarle su Vinted.
 
-**Novità:** cursore prima/dopo, etichette per vista, ritaglio dei margini fino al 18%, copia regolazioni sulle altre fotografie, protezione di base quando lo sfondo chiaro non è riconosciuto, ordine fotografie e ZIP.
+## Novità v1.3
+- Miglioramento automatico adattivo: valuta la luminosità media e usa correzioni più moderate rispetto alla v1.2.
+- Pulizia sfondo rapida più prudente: lavora solamente sulle zone classificate come sfondo e protegge i bordi.
+- **Pulizia precisa AI**: usa una maschera di segmentazione per evitare di uniformare la superficie del prodotto.
+- Intensità pulizia regolabile da 20% a 100%.
+- Rimangono prima/dopo, regolazioni manuali, ritaglio, etichette, ordine, download individuale e ZIP.
 
-**Limiti importanti:** lo scontorno automatico necessita Internet per scaricare il modello JS e deve essere verificato in Safari; la pulizia sfondo è euristica, non può garantire di preservare ogni dettaglio del prodotto. Su foto con bordi delicati torna a «Migliora foto». Le etichette suggerite per posizione non sono un riconoscimento automatico delle viste. Foto elaborate nel browser, originali non caricati a un server applicativo.
+## Uso su iPhone
+Apri https://26ale93-lab.github.io/vinted-photo-studio/ con Safari. Per aggiungere l'app alla schermata Home: Condividi → Aggiungi alla schermata Home.
 
-La versione è un file statico: il semplice ZIP non si installa come applicazione iOS. Pubblicalo su un indirizzo HTTPS.
+## Limiti
+- La pulizia rapida è euristica e non può distinguere sempre un prodotto chiaro da uno sfondo bianco. La modalità precisa richiede un modello AI scaricato dal browser e può fallire per limiti di memoria/dispositivo.
+- Le zone vicine ai bordi non vengono pulite intenzionalmente per ridurre il rischio di alterazioni: possono rimanere aloni che richiedono controllo manuale.
+- La correzione fotografica è globale e non garantisce una riproduzione cromatica assoluta. Confrontare sempre gli originali.
+- Le foto sono elaborate nel browser; il software non le invia a un backend proprietario. Sono richieste risorse esterne (CDN e modello AI).
+- La versione deve essere testata su Safari iPhone con foto reali.
