@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0b756b">
-<title>Vinted Photo Studio — iPhone v1.5.1</title>
+<title>Vinted Photo Studio — iPhone v1.6</title>
 <style>
 :root{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f3f6f5;color:#1b2e2c}
 *{box-sizing:border-box}body{margin:0;background:#f3f6f5}
@@ -24,12 +24,49 @@ input[type=file]{width:100%;font-size:14px}input[type=range]{width:100%;accent-c
 .badge{display:inline-block;padding:5px 9px;border-radius:999px;font-size:12px;margin:2px 6px 2px 0}.badge-ok{background:#e9f4f0;color:#086858}.badge-soft{background:#edf1f0;color:#50645f}.badge-warn{background:#fff6e9;color:#8a5b08}
 .list{padding-left:18px;margin:8px 0;font-size:12px;color:#516661;line-height:1.5}.small{font-size:11px;color:#6b7d79}.stack{display:grid;gap:8px}.toolbarTitle{font-size:13px;font-weight:700;color:#35534d;margin:10px 0 4px}
 footer{padding:20px 0 10px;text-align:center;color:#667b76;font-size:12px}
+
+/* Studio Light — interface v1.6 */
+:root{--ink:#19342f;--teal:#087b71;--line:#dae8e3}
+body{background:#edf2f0;color:var(--ink)}
+header{background:#fff;color:var(--ink);padding:calc(16px + env(safe-area-inset-top)) 18px 18px;border-bottom:1px solid var(--line)}
+header h1{font-size:21px;letter-spacing:-.65px}header p{color:#4d7e75;opacity:1}
+main{max-width:740px;padding:14px 12px calc(92px + env(safe-area-inset-bottom))}
+.card{border:1px solid var(--line);box-shadow:0 7px 30px #18433d0b;border-radius:22px}
+h2{letter-spacing:-.4px;margin-bottom:8px}
+button{transition:background .15s,transform .12s;touch-action:manipulation}
+button:active{transform:scale(.98)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #64bbaa;outline-offset:2px}
+.studioWorkspace{padding:13px;margin-top:10px}
+.workspaceHead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.workspaceHead .sub{margin:3px 0}.workspaceCount{background:#e8f3ef;padding:8px 11px;border-radius:99px;color:#176a5c;font-size:12px;font-weight:700}
+.thumbStrip{display:flex;gap:9px;overflow-x:auto;padding:4px 2px 12px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+.thumb{position:relative;padding:0;flex:0 0 67px;width:67px;height:67px;background:#f4f6f5;border:2px solid transparent;border-radius:13px;overflow:hidden;scroll-snap-align:start}
+.thumb.selected{border-color:#0b8c7d;box-shadow:0 0 0 2px #c0e7df}
+.thumb img{width:100%;height:100%;object-fit:cover}.thumb span{position:absolute;bottom:3px;right:4px;background:#113e37bd;color:#fff;font-size:10px;padding:2px 5px;border-radius:7px}
+.photo{border:none;padding:0;margin:0}.photo>h3{font-size:13px;color:#5c7670;margin:3px 0 11px;font-weight:600}
+.comparison{height:auto;aspect-ratio:4/5;background:#f5f7f6;border:1px solid #e2eae7;border-radius:17px;max-height:62vh}
+.comparison img{object-fit:contain}
+.comparisonInput{accent-color:var(--teal)}.toolbarTitle{font-size:14px;margin:17px 0 10px}
+.photo .row{margin:9px 0}.photo .row button{min-height:46px}
+.photo .row .soft{background:#f0f5f3}.photo .row .secondary{background:#e0f1ec;color:#136d60}
+.photo .row button:not(.soft):not(.secondary):not(.danger){background:#087b71}
+.adjustPanel{background:#f7faf9;border:1px solid #e4ece8;padding:12px;border-radius:14px;margin:12px 0}
+.adjustPanel summary{font-size:14px;font-weight:700;cursor:pointer;color:#226559;padding:3px}
+.adjustPanel[open] summary{margin-bottom:15px}
+.photo>div.row:has(button:nth-child(3)){gap:8px}
+.photo>div.row:has(button:nth-child(3)) button{flex:1 1 30%;font-size:12px;padding:11px 7px}
+.photo>div.row:has(button:nth-child(3)) button:first-child{background:#087b71;color:white}
+.photo>div.row:has(button:nth-child(3)) button.danger{background:#fff0ee;color:#ae4940}
+#workspace:has(.thumbStrip:empty) #photos:after{content:'Carica le foto per iniziare a modificarle';color:#6b8580;display:block;padding:35px 10px;text-align:center;font-size:14px}
+#photos .comparison + input{margin-top:13px}
+@media(min-width:700px){.comparison{aspect-ratio:4/3;max-height:580px}}
+
 </style>
 </head>
 <body>
 <header>
   <h1>Vinted Photo Studio</h1>
-  <p>v1.5.1 · Migliora foto · Pulisci sfondo · Rimuovi sfondo · Download</p>
+  <p>v1.6 · Migliora foto · Pulisci sfondo · Rimuovi sfondo · Download</p>
 </header>
 <main>
   <section class="card">
@@ -87,7 +124,11 @@ footer{padding:20px 0 10px;text-align:center;color:#667b76;font-size:12px}
     </div>
   </section>
 
-  <section id="photos"></section>
+  <section class="card studioWorkspace" id="workspace">
+  <div class="workspaceHead"><div><h2>Il tuo studio</h2><p class="sub">Seleziona una foto e perfezionala.</p></div><span class="workspaceCount" id="currentCount">0 / 0</span></div>
+  <div id="thumbs" class="thumbStrip" aria-label="Selezione fotografie"></div>
+  <div id="photos"></div>
+</section>
 
   <section class="card">
     <h2>4. Salva le foto</h2>
@@ -99,12 +140,13 @@ footer{padding:20px 0 10px;text-align:center;color:#667b76;font-size:12px}
     <p id="downloadStatus" class="progress"></p>
     <p class="small">Su iPhone, se Safari blocca più download consecutivi, usa lo ZIP.</p>
   </section>
-  <footer>Vinted Photo Studio v1.5.1 · versione focalizzata sulle immagini</footer>
+  <footer>Vinted Photo Studio v1.6 · versione focalizzata sulle immagini</footer>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script type="module">
 const $ = s => document.querySelector(s);
 const photos = [];
+let activePhotoIndex=0;
 const defaults = () => ({brightness:100, contrast:100, saturate:100, warmth:0, sharp:0});
 const clamp = (v,a,b) => Math.max(a, Math.min(b,v));
 function makeCanvas(w,h){ const c=document.createElement('canvas'); c.width=w; c.height=h; return c; }
@@ -163,7 +205,19 @@ function makeSlider(item,key,label,min,max,parent,onChange){ const row=document.
 function modeBadges(item){ const wrap=document.createElement('div'); const map={ improve:['Migliora foto','badge-ok'], clean:['Pulisci sfondo','badge-warn'], cut:['Rimuovi sfondo','badge-soft'] }; Object.entries(map).forEach(([key,[txt,cls]])=>{ const b=document.createElement('span'); b.className='badge '+cls; b.textContent=item.mode===key ? 'Modalità attiva: '+txt : txt; wrap.append(b); }); return wrap; }
 function guessLabel(index,total){ const labels=['fronte','retro','lato','dettaglio','etichetta','suola','dettaglio-2','dettaglio-3','extra']; if($('#namePreset').value==='generic') return String(index+1).padStart(2,'0'); return labels[index] || ('extra-'+String(index+1).padStart(2,'0')); }
 function applyNames(){ photos.forEach((p,i)=> p.label = guessLabel(i,photos.length)); redraw(); }
-function redraw(){ const root=$('#photos'); root.replaceChildren(); $('#total').textContent=photos.length ? `${photos.length} fotografie caricate` : 'Nessuna foto caricata'; photos.forEach((item,i)=>{ const sec=document.createElement('section'); sec.className='card photo'; const title=document.createElement('h3'); title.textContent=`Foto ${i+1} — ${item.file.name}`; sec.append(title); let badges=modeBadges(item); sec.append(badges); const compare=document.createElement('div');compare.className='comparison';
+function redraw(){
+ const root=$('#photos');root.replaceChildren();
+ const strip=$('#thumbs');strip.replaceChildren();
+ activePhotoIndex=Math.max(0,Math.min(activePhotoIndex,photos.length-1));
+ $('#currentCount').textContent=photos.length?(activePhotoIndex+1)+' / '+photos.length:'0 / 0';
+ photos.forEach((p,i)=>{
+   const b=document.createElement('button');b.className='thumb'+(i===activePhotoIndex?' selected':'');b.setAttribute('aria-label','Apri foto '+(i+1));b.setAttribute('aria-pressed',i===activePhotoIndex?'true':'false');
+   const img=document.createElement('img');img.src=p.url;img.alt='Miniatura foto '+(i+1);
+   const n=document.createElement('span');n.textContent=String(i+1);b.append(img,n);
+   b.onclick=()=>{activePhotoIndex=i;redraw();};
+   strip.append(b);
+ });
+ $('#total').textContent=photos.length ? `${photos.length} fotografie caricate` : 'Nessuna foto caricata'; photos.forEach((item,i)=>{ if(i!==activePhotoIndex)return; const sec=document.createElement('section'); sec.className='photo'; const title=document.createElement('h3'); title.textContent=`Foto ${i+1} — ${item.file.name}`; sec.append(title); let badges=modeBadges(item); sec.append(badges); const compare=document.createElement('div');compare.className='comparison';
  const original=document.createElement('img');original.src=item.url;original.alt='Originale';
  const edited=document.createElement('img');edited.className='after';edited.alt='Modificata';
  const line=document.createElement('div');line.className='line';
@@ -173,8 +227,9 @@ function redraw(){ const root=$('#photos'); root.replaceChildren(); $('#total').
  const hint=document.createElement('div');hint.className='small';hint.textContent='Sposta il cursore per confrontare originale e risultato';sec.append(hint);
  let previewTimer;
  const refresh=()=>{clearTimeout(previewTimer);previewTimer=setTimeout(()=>{try{edited.src=previewDataUrl(item);}catch(e){status.textContent='Anteprima non disponibile: '+e.message;}},160);status.textContent=item.status||'';const newBadges=modeBadges(item);badges.replaceWith(newBadges);badges=newBadges;};
- const labelWrap=document.createElement('div'); labelWrap.className='stack'; const labelTitle=document.createElement('div'); labelTitle.className='sub'; labelTitle.textContent='Etichetta file esportato'; const labelInput=document.createElement('select'); ['fronte','retro','lato','dettaglio','etichetta','suola','difetto','altro'].forEach(v=>{let o=document.createElement('option');o.value=v;o.textContent=v[0].toUpperCase()+v.slice(1);labelInput.append(o);}); labelInput.value=['fronte','retro','lato','dettaglio','etichetta','suola','difetto','altro'].includes(item.label)?item.label:'altro'; item.label=labelInput.value; labelInput.onchange=()=> item.label=labelInput.value; labelWrap.append(labelTitle,labelInput); sec.append(labelWrap); makeSlider(item,'brightness','Luminosità',65,140,sec,refresh); makeSlider(item,'contrast','Contrasto',70,135,sec,refresh); makeSlider(item,'saturate','Saturazione',70,130,sec,refresh); makeSlider(item,'warmth','Temperatura',-50,50,sec,refresh); makeSlider(item,'sharp','Nitidezza',0,35,sec,refresh); const cr=document.createElement('label');cr.className='range';cr.innerHTML='<span>Ritaglio margini</span>';const cv=document.createElement('span');cv.textContent=(item.crop||0)+'%';cr.append(cv);sec.append(cr);const ci=document.createElement('input');ci.type='range';ci.min='0';ci.max='18';ci.value=item.crop||0;ci.oninput=()=>{item.crop=Number(ci.value);cv.textContent=ci.value+'%';refresh();};sec.append(ci); const ciLabel=document.createElement('label');ciLabel.className='range';ciLabel.innerHTML='<span>Intensità pulizia sfondo</span>';const ciValue=document.createElement('span');ciValue.textContent=(item.cleanStrength??85)+'%';ciLabel.append(ciValue);sec.append(ciLabel);
- const cleanRange=document.createElement('input');cleanRange.type='range';cleanRange.min=20;cleanRange.max=100;cleanRange.value=item.cleanStrength??85;cleanRange.oninput=()=>{item.cleanStrength=Number(cleanRange.value);ciValue.textContent=cleanRange.value+'%';refresh();};sec.append(cleanRange);
+ const adjustDetails=document.createElement('details');adjustDetails.className='adjustPanel';const adjustSummary=document.createElement('summary');adjustSummary.textContent='Regolazioni avanzate';adjustDetails.append(adjustSummary);sec.append(adjustDetails);
+ const labelWrap=document.createElement('div'); labelWrap.className='stack'; const labelTitle=document.createElement('div'); labelTitle.className='sub'; labelTitle.textContent='Etichetta file esportato'; const labelInput=document.createElement('select'); ['fronte','retro','lato','dettaglio','etichetta','suola','difetto','altro'].forEach(v=>{let o=document.createElement('option');o.value=v;o.textContent=v[0].toUpperCase()+v.slice(1);labelInput.append(o);}); labelInput.value=['fronte','retro','lato','dettaglio','etichetta','suola','difetto','altro'].includes(item.label)?item.label:'altro'; item.label=labelInput.value; labelInput.onchange=()=> item.label=labelInput.value; labelWrap.append(labelTitle,labelInput); adjustDetails.append(labelWrap); makeSlider(item,'brightness','Luminosità',65,140,adjustDetails,refresh); makeSlider(item,'contrast','Contrasto',70,135,adjustDetails,refresh); makeSlider(item,'saturate','Saturazione',70,130,adjustDetails,refresh); makeSlider(item,'warmth','Temperatura',-50,50,adjustDetails,refresh); makeSlider(item,'sharp','Nitidezza',0,35,adjustDetails,refresh); const cr=document.createElement('label');cr.className='range';cr.innerHTML='<span>Ritaglio margini</span>';const cv=document.createElement('span');cv.textContent=(item.crop||0)+'%';cr.append(cv);adjustDetails.append(cr);const ci=document.createElement('input');ci.type='range';ci.min='0';ci.max='18';ci.value=item.crop||0;ci.oninput=()=>{item.crop=Number(ci.value);cv.textContent=ci.value+'%';refresh();};adjustDetails.append(ci); const ciLabel=document.createElement('label');ciLabel.className='range';ciLabel.innerHTML='<span>Intensità pulizia sfondo</span>';const ciValue=document.createElement('span');ciValue.textContent=(item.cleanStrength??85)+'%';ciLabel.append(ciValue);adjustDetails.append(ciLabel);
+ const cleanRange=document.createElement('input');cleanRange.type='range';cleanRange.min=20;cleanRange.max=100;cleanRange.value=item.cleanStrength??85;cleanRange.oninput=()=>{item.cleanStrength=Number(cleanRange.value);ciValue.textContent=cleanRange.value+'%';refresh();};adjustDetails.append(cleanRange);
  const status=document.createElement('div'); status.className='progress'; sec.append(status); const info=document.createElement('div'); info.className='small'; info.textContent='Controlla sempre che prodotto, colore e difetti reali restino fedeli.'; sec.append(info); const presets=document.createElement('div');presets.className='row';
  const presetDefs=[
  ['Naturale',{brightness:100,contrast:100,saturate:100,warmth:0,sharp:2}],
@@ -199,10 +254,10 @@ function redraw(){ const root=$('#photos'); root.replaceChildren(); $('#total').
  };
  presets.append(b);
  });
- const presetTitle=document.createElement('div');presetTitle.className='toolbarTitle';presetTitle.textContent='Preset rapidi';sec.append(presetTitle,presets);
+ const presetTitle=document.createElement('div');presetTitle.className='toolbarTitle';presetTitle.textContent='Stile fotografico';sec.append(presetTitle,presets);
  const actions1=document.createElement('div'); actions1.className='row'; const improve=document.createElement('button'); improve.className='secondary'; improve.textContent='Migliora foto'; improve.onclick=()=>{ item.mode='improve'; item.status='Correzione fotografica naturale applicata.'; refresh(); }; const clean=document.createElement('button'); clean.className='secondary'; clean.textContent='Pulisci sfondo'; clean.onclick=()=>{ item.mode='clean'; item.status='Sfondo chiaro uniformato e ripulito.'; item.cleanMask=null; refresh(); }; const precise=document.createElement('button');precise.className='secondary';precise.textContent='Pulizia precisa AI';
  precise.onclick=async()=>{precise.disabled=true;try{await removeBackgroundAI(drawBasePhoto(item),item,status);item.mode='clean';item.status='Pulizia AI attivata. Controlla i bordi del prodotto.';refresh();}catch(e){item.status='Pulizia AI non disponibile: '+e.message;status.textContent=item.status;}finally{precise.disabled=false;}};
- const cut=document.createElement('button'); cut.textContent='Rimuovi sfondo'; cut.onclick=async()=>{ cut.disabled=true; try{ item.mode='cut'; const base=drawBasePhoto(item); await removeBackgroundAI(base,item,status); item.status='Sfondo rimosso. Controlla bene i bordi.'; refresh(); } catch(e){ item.mode='improve'; item.status='Errore scontorno: '+e.message; status.textContent=item.status; } finally { cut.disabled=false; } }; actions1.append(improve,precise,cut);const quickDetails=document.createElement('details');quickDetails.style.marginTop='9px';const summary=document.createElement('summary');summary.textContent='Altri strumenti: pulizia rapida';summary.style.fontSize='13px';summary.style.cursor='pointer';quickDetails.append(summary,clean);sec.append(actions1,quickDetails); const actions2=document.createElement('div'); actions2.className='row'; const reset=document.createElement('button'); reset.className='soft'; reset.textContent='Ripristina automatico'; reset.onclick=()=>{ applyDefaultImprove(item); refresh(); }; const moveUp=document.createElement('button'); moveUp.className='soft'; moveUp.textContent='Sposta su'; moveUp.onclick=()=>{ if(i===0) return; [photos[i-1],photos[i]]=[photos[i],photos[i-1]]; redraw(); }; const moveDown=document.createElement('button'); moveDown.className='soft'; moveDown.textContent='Sposta giù'; moveDown.onclick=()=>{ if(i===photos.length-1) return; [photos[i+1],photos[i]]=[photos[i],photos[i+1]]; redraw(); }; const copy=document.createElement('button');copy.className='secondary';copy.textContent='Copia regolazioni su tutte';copy.onclick=()=>{if(!confirm('Copiare le regolazioni di questa foto sulle altre?'))return;photos.forEach(p=>{if(p!==item){p.settings={...item.settings};p.crop=item.crop;p.cleanStrength=item.cleanStrength;p.cleanMask=null;}});redraw();};actions2.append(reset,moveUp,moveDown,copy); sec.append(actions2); const actions3=document.createElement('div'); actions3.className='row'; const download=document.createElement('button'); download.className='soft'; download.textContent='Scarica questa foto'; download.onclick=async()=>{ const out=await getOutput(item,i); triggerDownload(out.blob,out.name); }; const removeBtn=document.createElement('button'); removeBtn.className='danger'; removeBtn.textContent='Elimina questa foto'; removeBtn.onclick=()=>{ cleanupItem(item); photos.splice(i,1); redraw(); }; const toPhotos=document.createElement('button');toPhotos.textContent='Salva nel rullino';toPhotos.onclick=()=>shareImageToPhotos(item,i,toPhotos); actions3.append(toPhotos,download,removeBtn); sec.append(actions3); root.append(sec); refresh(); }); }
+ const cut=document.createElement('button'); cut.textContent='Rimuovi sfondo'; cut.onclick=async()=>{ cut.disabled=true; try{ item.mode='cut'; const base=drawBasePhoto(item); await removeBackgroundAI(base,item,status); item.status='Sfondo rimosso. Controlla bene i bordi.'; refresh(); } catch(e){ item.mode='improve'; item.status='Errore scontorno: '+e.message; status.textContent=item.status; } finally { cut.disabled=false; } }; actions1.append(improve,precise,cut);const quickDetails=document.createElement('details');quickDetails.style.marginTop='9px';const summary=document.createElement('summary');summary.textContent='Altri strumenti: pulizia rapida';summary.style.fontSize='13px';summary.style.cursor='pointer';quickDetails.append(summary,clean);sec.append(actions1,quickDetails); const actions2=document.createElement('div'); actions2.className='row'; const reset=document.createElement('button'); reset.className='soft'; reset.textContent='Ripristina automatico'; reset.onclick=()=>{ applyDefaultImprove(item); refresh(); }; const moveUp=document.createElement('button'); moveUp.className='soft'; moveUp.textContent='Sposta su'; moveUp.onclick=()=>{ if(i===0) return; [photos[i-1],photos[i]]=[photos[i],photos[i-1]]; activePhotoIndex=i-1; redraw(); }; const moveDown=document.createElement('button'); moveDown.className='soft'; moveDown.textContent='Sposta giù'; moveDown.onclick=()=>{ if(i===photos.length-1) return; [photos[i+1],photos[i]]=[photos[i],photos[i+1]]; activePhotoIndex=i+1; redraw(); }; const copy=document.createElement('button');copy.className='secondary';copy.textContent='Copia regolazioni su tutte';copy.onclick=()=>{if(!confirm('Copiare le regolazioni di questa foto sulle altre?'))return;photos.forEach(p=>{if(p!==item){p.settings={...item.settings};p.crop=item.crop;p.cleanStrength=item.cleanStrength;p.cleanMask=null;}});redraw();};actions2.append(reset,moveUp,moveDown,copy); sec.append(actions2); const actions3=document.createElement('div'); actions3.className='row'; const download=document.createElement('button'); download.className='soft'; download.textContent='Scarica questa foto'; download.onclick=async()=>{ const out=await getOutput(item,i); triggerDownload(out.blob,out.name); }; const removeBtn=document.createElement('button'); removeBtn.className='danger'; removeBtn.textContent='Elimina questa foto'; removeBtn.onclick=()=>{ cleanupItem(item); photos.splice(i,1); activePhotoIndex=Math.min(i,photos.length-1); redraw(); }; const toPhotos=document.createElement('button');toPhotos.textContent='Salva nel rullino';toPhotos.onclick=()=>shareImageToPhotos(item,i,toPhotos); actions3.append(toPhotos,download,removeBtn);sec.append(actions3); root.append(sec); refresh(); }); }
 function cleanupItem(item){ try{ URL.revokeObjectURL(item.url); }catch{} try{ if(item.aiMaskUrl) URL.revokeObjectURL(item.aiMaskUrl);}catch{} }
 function applyDefaultImprove(item){
  const cv=makeCanvas(160,160),cx=cv.getContext('2d',{willReadFrequently:true});cx.drawImage(item.img,0,0,160,160);
@@ -251,10 +306,10 @@ function showImageSavePanel(blob){
 function triggerDownload(blob,name){ const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.append(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),30000); }
 function safeSlug(s){ return (s||'vinted').toLowerCase().trim().replace(/[^a-z0-9àèéìòù_-]+/gi,'-').replace(/-+/g,'-').replace(/^[-]+|[-]+$/g,'') || 'vinted'; }
 async function getOutput(item,index){ const canvas=renderFinal(item); const png=item.mode==='cut' && $('#cutBackground').value==='transparent' && item.aiMaskImg; const blob=await canvasToBlob(canvas,png?'image/png':'image/jpeg',.94); const modeSuffix=item.mode==='clean'?'clean':(item.mode==='cut'?'cut':'photo'); const ext=png?'png':'jpg'; const prefix=safeSlug($('#filePrefix').value||'vinted'); const label=safeSlug(item.label || guessLabel(index,photos.length)); const num=String(index+1).padStart(2,'0'); return {blob,name:`${prefix}_${num}_${label}_${modeSuffix}.${ext}`}; }
-$('#files').onchange=async e=>{ for(const f of [...e.target.files]){ if(photos.some(p=>p.file.name===f.name&&p.file.size===f.size&&p.file.lastModified===f.lastModified)) continue; const url=URL.createObjectURL(f); try{ const img=await loadImage(url); const item={file:f,img,url,settings:defaults(),mode:'improve',cleanMask:null,aiMaskImg:null,aiMaskUrl:null,status:'',label:'',crop:0,cleanStrength:85}; applyDefaultImprove(item); photos.push(item);} catch(err){ URL.revokeObjectURL(url); alert('Formato non leggibile: '+f.name);} } e.target.value=''; applyNames(); redraw(); };
+$('#files').onchange=async e=>{ for(const f of [...e.target.files]){ if(photos.some(p=>p.file.name===f.name&&p.file.size===f.size&&p.file.lastModified===f.lastModified)) continue; const url=URL.createObjectURL(f); try{ const img=await loadImage(url); const item={file:f,img,url,settings:defaults(),mode:'improve',cleanMask:null,aiMaskImg:null,aiMaskUrl:null,status:'',label:'',crop:0,cleanStrength:85}; applyDefaultImprove(item); photos.push(item);} catch(err){ URL.revokeObjectURL(url); alert('Formato non leggibile: '+f.name);} } e.target.value=''; applyNames();activePhotoIndex=Math.max(0,photos.length-1);redraw(); };
 $('#autoImprove').onclick=()=>{ photos.forEach(applyDefaultImprove); redraw(); };
 $('#autoClean').onclick=()=>{ photos.forEach(applyDefaultClean); redraw(); };
-$('#clearAll').onclick=()=>{ if(!confirm('Eliminare tutte le foto dalla sessione?')) return; photos.forEach(cleanupItem); photos.length=0; redraw(); };
+$('#clearAll').onclick=()=>{ if(!confirm('Eliminare tutte le foto dalla sessione?')) return; photos.forEach(cleanupItem); photos.length=0;activePhotoIndex=0; redraw(); };
 $('#cutBackground').onchange=()=>redraw();
 $('#applyNames').onclick=()=>applyNames();
 $('#downloadAll').onclick=async()=>{ for(let i=0;i<photos.length;i++){ const out=await getOutput(photos[i],i); triggerDownload(out.blob,out.name);} };
