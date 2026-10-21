@@ -1,8 +1,8 @@
-# Vinted Photo Studio per iPhone — v1.4
+# Vinted Photo Studio per iPhone — v1.5
 
 Web app per correggere fotografie di prodotti e pulire o sostituire lo sfondo prima di caricarle su Vinted.
 
-## Novità v1.4
+## Novità v1.5
 - Miglioramento automatico adattivo: valuta la luminosità media e usa correzioni più moderate rispetto alla v1.2.
 - Pulizia sfondo rapida più prudente: lavora solamente sulle zone classificate come sfondo e protegge i bordi.
 - **Pulizia precisa AI**: usa una maschera di segmentazione per evitare di uniformare la superficie del prodotto.
@@ -20,5 +20,9 @@ Apri https://26ale93-lab.github.io/vinted-photo-studio/ con Safari. Per aggiunge
 - La versione deve essere testata su Safari iPhone con foto reali.
 
 
-## Novità v1.4 — Salvataggio nel rullino iPhone
+## Novità v1.5 — Salvataggio nel rullino iPhone
 Premi **Salva nel rullino** sotto la singola foto. Safari apre il menu di condivisione iOS: scegli **Salva immagine**. Se il menu non è disponibile, compare la fotografia a schermo intero: tieni premuto sull'immagine e scegli **Salva in Foto**. Per motivi di sicurezza del browser, la web app non può scrivere direttamente nel rullino senza l'interazione dell'utente. Rimangono download singolo e ZIP.
+
+
+## v1.5
+Preset rapidi Naturale, Più luminoso, Vinted pulito e Solo sfondo. Pulizia precisa AI tra le azioni principali, pulizia rapida tra gli strumenti secondari. Restano disponibili condivisione nel rullino iOS e download ZIP. Verificare sempre colore, usura e contorni prima della pubblicazione.
