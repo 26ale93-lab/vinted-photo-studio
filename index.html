@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b756b">
+<title>Vinted Photo Studio — iPhone v1.2</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f3f6f5;color:#1b2e2c}
+*{box-sizing:border-box}body{margin:0;background:#f3f6f5}
+header{padding:calc(18px + env(safe-area-inset-top)) 17px 18px;background:#0b756b;color:#fff}
+h1{font-size:23px;margin:0 0 5px}header p{margin:0;font-size:13px;opacity:.93}
+main{max-width:920px;margin:auto;padding:14px 13px 78px}.card{background:#fff;padding:17px;border-radius:17px;box-shadow:0 2px 15px #1026210b;margin-bottom:13px}
+h2{font-size:18px;margin:0 0 12px}h3{font-size:15px;margin:0 0 7px}.sub{color:#566c67;font-size:12px;line-height:1.5}.status{color:#0b756b;font-size:13px;font-weight:600}
+.note{background:#f5fbf9;border:1px solid #d8ebe5;border-radius:12px;padding:10px;font-size:12px;line-height:1.45;color:#35534d}.warning{background:#fff6e9;border:1px solid #f0ddb3;border-radius:12px;padding:10px;font-size:12px;line-height:1.45;color:#6f4f14;margin-top:9px}
+button{font:600 14px -apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#0b756b;color:#fff;border:0;border-radius:11px;padding:12px;cursor:pointer}
+button:disabled{opacity:.45}.secondary{background:#e3efec;color:#126459}.soft{background:#f0f3f2;color:#344d48}.danger{background:#b34e43}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>button,.row>select,.row>input{flex:1;min-width:0}
+input[type=file]{width:100%;font-size:14px}input[type=range]{width:100%;accent-color:#0b756b}input[type=text],select{background:#fff;border:1px solid #cadad5;border-radius:10px;padding:10px;font-size:15px;width:100%}
+.photo{border:1px solid #dce9e4;border-radius:15px;padding:12px;margin-top:12px}.photo h3{overflow-wrap:anywhere}
+.compare{display:flex;gap:8px;align-items:flex-start}.compare>div{min-width:0;flex:1}.compare span{display:block;font-size:11px;color:#576d67;margin:3px 0}
+.comparison{position:relative;height:230px;overflow:hidden;border-radius:10px;background:#f4f5f4}.comparison img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}.comparison .after{clip-path:inset(0 50% 0 0)}.comparison .line{position:absolute;top:0;bottom:0;left:50%;width:2px;background:#0b756b;pointer-events:none}.comparisonInput{width:100%!important;margin:8px 0 0}.compare img{height:190px;width:100%;object-fit:contain;background:repeating-conic-gradient(#eee 0% 25%,#fff 0% 50%) 50%/22px 22px;border-radius:10px}
+.range{display:flex;justify-content:space-between;font-size:12px;color:#495d57;margin-top:9px}.progress{font-size:12px;margin:8px 0;color:#47665d}
+.badge{display:inline-block;padding:5px 9px;border-radius:999px;font-size:12px;margin:2px 6px 2px 0}.badge-ok{background:#e9f4f0;color:#086858}.badge-soft{background:#edf1f0;color:#50645f}.badge-warn{background:#fff6e9;color:#8a5b08}
+.list{padding-left:18px;margin:8px 0;font-size:12px;color:#516661;line-height:1.5}.small{font-size:11px;color:#6b7d79}.stack{display:grid;gap:8px}.toolbarTitle{font-size:13px;font-weight:700;color:#35534d;margin:10px 0 4px}
+footer{padding:20px 0 10px;text-align:center;color:#667b76;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Vinted Photo Studio</h1>
+  <p>v1.2 · Migliora foto · Pulisci sfondo · Rimuovi sfondo · Download</p>
+</header>
+<main>
+  <section class="card">
+    <h2>1. Carica le fotografie</h2>
+    <input id="files" type="file" multiple accept="image/*,.heic,.heif">
+    <p class="sub">Le immagini restano separate, senza collage. Le foto originali non vengono alterate.</p>
+    <p id="total" class="status">Nessuna foto caricata</p>
+    <div class="toolbarTitle">Azioni rapide su tutte le foto</div>
+    <div class="row">
+      <button id="autoImprove" class="secondary">Migliora tutte</button>
+      <button id="autoClean" class="secondary">Pulisci sfondo su tutte</button>
+      <button id="clearAll" class="soft">Svuota</button>
+    </div>
+    <div class="warning">La modalità <strong>Pulisci sfondo</strong> è pensata per fondi già chiari o bianchi con righe, pieghe leggere o piccole ombre. La modalità <strong>Rimuovi sfondo</strong> scontorna il prodotto e sostituisce lo sfondo.</div>
+  </section>
+
+  <section class="card">
+    <h2>2. Impostazioni generali</h2>
+    <div class="stack">
+      <div>
+        <div class="sub">Tipo di sfondo per la modalità Rimuovi sfondo</div>
+        <select id="cutBackground">
+          <option value="white">Bianco pulito</option>
+          <option value="light">Grigio chiaro</option>
+          <option value="transparent">Trasparente (PNG)</option>
+          <option value="original">Mantieni originale</option>
+        </select>
+      </div>
+      <div>
+        <div class="sub">Prefisso nomi file esportati</div>
+        <input id="filePrefix" type="text" value="vinted" placeholder="es. nike-dunk">
+      </div>
+      <div>
+        <div class="sub">Etichette automatiche dei nomi file</div>
+        <div class="row">
+          <select id="namePreset">
+            <option value="auto">Automatico (fronte, retro, dettaglio...)</option>
+            <option value="generic">Generico numerato</option>
+          </select>
+          <button id="applyNames" class="soft">Applica nomi automatici</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>3. Modalità disponibili</h2>
+    <div class="note">
+      <ul class="list">
+        <li><strong>Migliora foto</strong>: corregge luce, contrasto, colore e nitidezza in modo naturale.</li>
+        <li><strong>Pulisci sfondo</strong>: prova a ripulire soltanto il fondale chiaro, attenuando righe, pieghe e ombre leggere senza cambiare il prodotto.</li>
+        <li><strong>Rimuovi sfondo</strong>: scontorna il prodotto con AI locale e applica il nuovo sfondo scelto sopra.</li>
+        <li><strong>Confronto a cursore</strong>: scorri per vedere originale e risultato.</li><li><strong>Ritaglio</strong>: puoi tagliare i margini in percentuale senza deformare il prodotto.</li><li><strong>Ordine foto</strong>: puoi spostare ogni immagine su o giù prima del download.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="photos"></section>
+
+  <section class="card">
+    <h2>4. Scarica le foto</h2>
+    <p class="sub">Esportazione singola o ZIP. PNG se usi sfondo trasparente con scontorno, altrimenti JPEG.</p>
+    <div class="row">
+      <button id="downloadZip">Scarica ZIP</button>
+      <button id="downloadAll" class="secondary">Salva singolarmente</button>
+    </div>
+    <p id="downloadStatus" class="progress"></p>
+    <p class="small">Su iPhone, se Safari blocca più download consecutivi, usa lo ZIP.</p>
+  </section>
+  <footer>Vinted Photo Studio v1.2 · versione focalizzata sulle immagini</footer>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script type="module">
+const $ = s => document.querySelector(s);
+const photos = [];
+const defaults = () => ({brightness:100, contrast:100, saturate:100, warmth:0, sharp:0});
+const clamp = (v,a,b) => Math.max(a, Math.min(b,v));
+function makeCanvas(w,h){ const c=document.createElement('canvas'); c.width=w; c.height=h; return c; }
+function loadImage(src){ return new Promise((resolve,reject)=>{ const i = new Image(); i.onload=()=>resolve(i); i.onerror=reject; i.src=src; }); }
+function canvasToBlob(c, type='image/jpeg', quality=.94){ return new Promise(resolve=>c.toBlob(resolve,type,quality)); }
+function scaledDimensions(img, maxSide=2400){ let w = img.naturalWidth || img.width, h = img.naturalHeight || img.height; const sc = Math.min(1, maxSide / Math.max(w,h)); return {w:Math.max(1,Math.round(w*sc)), h:Math.max(1,Math.round(h*sc))}; }
+function cropCanvas(c,item){
+ const cr=clamp(item.crop||0,0,18)/100;
+ if(!cr) return c;
+ const x=Math.round(c.width*cr),y=Math.round(c.height*cr);
+ const w=c.width-2*x,h=c.height-2*y;
+ if(w<1||h<1)return c;
+ const out=makeCanvas(w,h);out.getContext('2d').drawImage(c,x,y,w,h,0,0,w,h);return out;
+}
+function drawBasePhoto(item){ const {w,h}=scaledDimensions(item.img); const out=makeCanvas(w,h); const ctx=out.getContext('2d',{willReadFrequently:true}); const s=item.settings; ctx.filter=`brightness(${s.brightness}%) contrast(${s.contrast}%) saturate(${s.saturate}%)`; ctx.drawImage(item.img,0,0,w,h); ctx.filter='none'; if(s.warmth!==0){ ctx.save(); ctx.globalCompositeOperation='soft-light'; ctx.fillStyle=s.warmth>0?`rgba(255,145,40,${Math.abs(s.warmth)/320})`:`rgba(55,120,255,${Math.abs(s.warmth)/320})`; ctx.fillRect(0,0,w,h); ctx.restore(); } if(s.sharp>0){ const imgData=ctx.getImageData(0,0,w,h); const src=new Uint8ClampedArray(imgData.data); const z=clamp(s.sharp/100,0,.45); for(let y=1;y<h-1;y++){ for(let x=1;x<w-1;x++){ const idx=(y*w+x)*4; for(let k=0;k<3;k++){ const edge=5*src[idx+k]-src[idx-4+k]-src[idx+4+k]-src[idx-w*4+k]-src[idx+w*4+k]; imgData.data[idx+k]=clamp(src[idx+k]*(1-z)+edge*z,0,255); } } } ctx.putImageData(imgData,0,0);} return out; }
+function rgbAt(data, idx){ return [data[idx], data[idx+1], data[idx+2]]; }
+function dist(a,b){ return Math.sqrt((a[0]-b[0])**2+(a[1]-b[1])**2+(a[2]-b[2])**2); }
+function estimateBgColor(data,w,h){ const pts=[[2,2],[w-3,2],[2,h-3],[w-3,h-3],[Math.floor(w/2),2],[Math.floor(w/2),h-3],[2,Math.floor(h/2)],[w-3,Math.floor(h/2)]]; const vals=[]; for(const [x,y] of pts){ const i=(y*w+x)*4; vals.push(rgbAt(data,i)); } const avg=[0,0,0]; vals.forEach(v=>{avg[0]+=v[0];avg[1]+=v[1];avg[2]+=v[2];}); avg[0]/=vals.length; avg[1]/=vals.length; avg[2]/=vals.length; return avg; }
+function buildCornerMask(photoCanvas){ const w=photoCanvas.width,h=photoCanvas.height; const ctx=photoCanvas.getContext('2d',{willReadFrequently:true}); const src=ctx.getImageData(0,0,w,h); const data=src.data; const bg=estimateBgColor(data,w,h); const bgLight=(bg[0]+bg[1]+bg[2])/3; const thr=bgLight>200?60:42; const visited=new Uint8Array(w*h); const mask=new Uint8Array(w*h); const qx=new Int32Array(w*h), qy=new Int32Array(w*h); let head=0, tail=0; function push(x,y){ if(x<0||y<0||x>=w||y>=h) return; const idx=y*w+x; if(visited[idx]) return; visited[idx]=1; qx[tail]=x; qy[tail]=y; tail++; } for(let x=0;x<w;x++){ push(x,0); push(x,h-1);} for(let y=0;y<h;y++){ push(0,y); push(w-1,y);} while(head<tail){ const x=qx[head], y=qy[head]; head++; const idx=y*w+x; const di=idx*4; const c=[data[di],data[di+1],data[di+2]]; const light=(c[0]+c[1]+c[2])/3; const acceptable=dist(c,bg)<thr || (bgLight>210 && light>185); if(!acceptable) continue; mask[idx]=1; push(x+1,y); push(x-1,y); push(x,y+1); push(x,y-1); } const expanded=new Uint8Array(mask); for(let y=1;y<h-1;y++){ for(let x=1;x<w-1;x++){ const i=y*w+x; if(mask[i]) continue; let count=0; for(let yy=-1;yy<=1;yy++) for(let xx=-1;xx<=1;xx++) count += mask[(y+yy)*w+(x+xx)]; if(count>=6) expanded[i]=1; }} return {mask:expanded, bg}; }
+function cleanBackground(baseCanvas, item){ const w=baseCanvas.width,h=baseCanvas.height; const srcCtx=baseCanvas.getContext('2d',{willReadFrequently:true}); const srcData=srcCtx.getImageData(0,0,w,h); const result=makeCanvas(w,h); const rctx=result.getContext('2d',{willReadFrequently:true}); rctx.putImageData(srcData,0,0); const out=rctx.getImageData(0,0,w,h); const d=out.data; const {mask,bg}=item.cleanMask || buildCornerMask(baseCanvas); item.cleanMask={mask,bg}; const coverage=mask.reduce((sum,v)=>sum+v,0)/mask.length;if(coverage<.06||coverage>.88){item.status='Pulizia prudente: fondale non riconosciuto con sufficiente affidabilità. Nessuna pulizia applicata.';return baseCanvas;}const bgTarget=[248,248,248]; const strength=.68; for(let i=0;i<mask.length;i++){ if(!mask[i]) continue; const j=i*4; const cur=[d[j],d[j+1],d[j+2]]; const light=(cur[0]+cur[1]+cur[2])/3; const linePenalty=Math.max(0,210-light)/210; const localStrength=clamp(strength+linePenalty*.25,.6,.92); const target=[(bgTarget[0]*.85+bg[0]*.15),(bgTarget[1]*.85+bg[1]*.15),(bgTarget[2]*.85+bg[2]*.15)]; d[j]=Math.round(cur[0]*(1-localStrength)+target[0]*localStrength); d[j+1]=Math.round(cur[1]*(1-localStrength)+target[1]*localStrength); d[j+2]=Math.round(cur[2]*(1-localStrength)+target[2]*localStrength);} rctx.putImageData(out,0,0); const finalData=rctx.getImageData(0,0,w,h); const fd=finalData.data; const copy=new Uint8ClampedArray(fd); for(let y=1;y<h-1;y++){ for(let x=1;x<w-1;x++){ const idx=y*w+x; if(!mask[idx]) continue; for(let k=0;k<3;k++){ let sum=0,c=0; for(let yy=-1;yy<=1;yy++){ for(let xx=-1;xx<=1;xx++){ const ni=(y+yy)*w+(x+xx); if(!mask[ni]) continue; sum+=copy[ni*4+k]; c++; }} fd[idx*4+k]=Math.round(sum/Math.max(1,c)); } }} rctx.putImageData(finalData,0,0); return result; }
+async function removeBackgroundAI(baseCanvas,item,statusEl){ if(item.aiMaskImg) return item.aiMaskImg; statusEl.textContent='Caricamento modello e rimozione dello sfondo…'; const mod=await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm'); const removeBackground=mod.default || mod.removeBackground; if(!removeBackground) throw new Error('Modulo AI non disponibile'); const scale=Math.min(1,1600/baseCanvas.width,1600/baseCanvas.height); const rw=Math.max(1,Math.round(baseCanvas.width*scale)), rh=Math.max(1,Math.round(baseCanvas.height*scale)); const reduced=makeCanvas(rw,rh); reduced.getContext('2d').drawImage(baseCanvas,0,0,rw,rh); const reducedBlob=await canvasToBlob(reduced,'image/png'); const resultBlob=await removeBackground(reducedBlob); const url=URL.createObjectURL(resultBlob); const maskImg=await loadImage(url); item.aiMaskImg=maskImg; item.aiMaskUrl=url; return maskImg; }
+function composeCutout(baseCanvas,maskImg,bgMode){ const w=baseCanvas.width,h=baseCanvas.height; const out=makeCanvas(w,h); const ctx=out.getContext('2d',{willReadFrequently:true}); ctx.drawImage(baseCanvas,0,0); const maskLayer=makeCanvas(w,h); const mctx=maskLayer.getContext('2d'); mctx.drawImage(maskImg,0,0,w,h); const maskData=mctx.getImageData(0,0,w,h); const imageData=ctx.getImageData(0,0,w,h); for(let i=0;i<imageData.data.length;i+=4) imageData.data[i+3]=maskData.data[i+3]; ctx.putImageData(imageData,0,0); if(bgMode==='transparent') return out; if(bgMode==='original') return baseCanvas; const comp=makeCanvas(w,h); const cctx=comp.getContext('2d'); cctx.fillStyle=bgMode==='white'?'#ffffff':'#f2f3f3'; cctx.fillRect(0,0,w,h); cctx.drawImage(out,0,0); return comp; }
+function renderFinal(item){ const base=drawBasePhoto(item); if(item.mode==='clean') return cropCanvas(cleanBackground(base,item),item); if(item.mode==='cut' && item.aiMaskImg) return cropCanvas(composeCutout(base,item.aiMaskImg,$('#cutBackground').value),item); return cropCanvas(base,item); }
+function previewDataUrl(item){ const c=renderFinal(item); const png=item.mode==='cut' && $('#cutBackground').value==='transparent' && item.aiMaskImg; return c.toDataURL(png?'image/png':'image/jpeg',.86); }
+function makeSlider(item,key,label,min,max,parent,onChange){ const row=document.createElement('label'); row.className='range'; const left=document.createElement('span'); left.textContent=label; const right=document.createElement('span'); right.textContent=item.settings[key]; row.append(left,right); parent.append(row); const range=document.createElement('input'); range.type='range'; range.min=min; range.max=max; range.value=item.settings[key]; range.oninput=()=>{ item.settings[key]=Number(range.value); right.textContent=range.value; item.cleanMask=null; onChange(); }; parent.append(range); }
+function modeBadges(item){ const wrap=document.createElement('div'); const map={ improve:['Migliora foto','badge-ok'], clean:['Pulisci sfondo','badge-warn'], cut:['Rimuovi sfondo','badge-soft'] }; Object.entries(map).forEach(([key,[txt,cls]])=>{ const b=document.createElement('span'); b.className='badge '+cls; b.textContent=item.mode===key ? 'Modalità attiva: '+txt : txt; wrap.append(b); }); return wrap; }
+function guessLabel(index,total){ const labels=['fronte','retro','lato','dettaglio','etichetta','suola','dettaglio-2','dettaglio-3','extra']; if($('#namePreset').value==='generic') return String(index+1).padStart(2,'0'); return labels[index] || ('extra-'+String(index+1).padStart(2,'0')); }
+function applyNames(){ photos.forEach((p,i)=> p.label = guessLabel(i,photos.length)); redraw(); }
+function redraw(){ const root=$('#photos'); root.replaceChildren(); $('#total').textContent=photos.length ? `${photos.length} fotografie caricate` : 'Nessuna foto caricata'; photos.forEach((item,i)=>{ const sec=document.createElement('section'); sec.className='card photo'; const title=document.createElement('h3'); title.textContent=`Foto ${i+1} — ${item.file.name}`; sec.append(title); let badges=modeBadges(item); sec.append(badges); const compare=document.createElement('div');compare.className='comparison';
+ const original=document.createElement('img');original.src=item.url;original.alt='Originale';
+ const edited=document.createElement('img');edited.className='after';edited.alt='Modificata';
+ const line=document.createElement('div');line.className='line';
+ compare.append(original,edited,line);sec.append(compare);
+ const compareRange=document.createElement('input');compareRange.type='range';compareRange.min=0;compareRange.max=100;compareRange.value=50;compareRange.className='comparisonInput';compareRange.setAttribute('aria-label','Confronto prima e dopo');
+ compareRange.oninput=()=>{const v=Number(compareRange.value);edited.style.clipPath=`inset(0 ${100-v}% 0 0)`;line.style.left=v+'%';};sec.append(compareRange);
+ const hint=document.createElement('div');hint.className='small';hint.textContent='← Originale   |   Modificata →';sec.append(hint);
+ let previewTimer;
+ const refresh=()=>{clearTimeout(previewTimer);previewTimer=setTimeout(()=>{try{edited.src=previewDataUrl(item);}catch(e){status.textContent='Anteprima non disponibile: '+e.message;}},160);status.textContent=item.status||'';const newBadges=modeBadges(item);badges.replaceWith(newBadges);badges=newBadges;};
+ const labelWrap=document.createElement('div'); labelWrap.className='stack'; const labelTitle=document.createElement('div'); labelTitle.className='sub'; labelTitle.textContent='Etichetta file esportato'; const labelInput=document.createElement('select'); ['fronte','retro','lato','dettaglio','etichetta','suola','difetto','altro'].forEach(v=>{let o=document.createElement('option');o.value=v;o.textContent=v[0].toUpperCase()+v.slice(1);labelInput.append(o);}); labelInput.value=['fronte','retro','lato','dettaglio','etichetta','suola','difetto','altro'].includes(item.label)?item.label:'altro'; item.label=labelInput.value; labelInput.onchange=()=> item.label=labelInput.value; labelWrap.append(labelTitle,labelInput); sec.append(labelWrap); makeSlider(item,'brightness','Luminosità',65,140,sec,refresh); makeSlider(item,'contrast','Contrasto',70,135,sec,refresh); makeSlider(item,'saturate','Saturazione',70,130,sec,refresh); makeSlider(item,'warmth','Temperatura',-50,50,sec,refresh); makeSlider(item,'sharp','Nitidezza',0,35,sec,refresh); const cr=document.createElement('label');cr.className='range';cr.innerHTML='<span>Ritaglio margini</span>';const cv=document.createElement('span');cv.textContent=(item.crop||0)+'%';cr.append(cv);sec.append(cr);const ci=document.createElement('input');ci.type='range';ci.min='0';ci.max='18';ci.value=item.crop||0;ci.oninput=()=>{item.crop=Number(ci.value);cv.textContent=ci.value+'%';refresh();};sec.append(ci); const status=document.createElement('div'); status.className='progress'; sec.append(status); const info=document.createElement('div'); info.className='small'; info.textContent='Controlla sempre che prodotto, colore e difetti reali restino fedeli.'; sec.append(info); const actions1=document.createElement('div'); actions1.className='row'; const improve=document.createElement('button'); improve.className='secondary'; improve.textContent='Migliora foto'; improve.onclick=()=>{ item.mode='improve'; item.status='Correzione fotografica naturale applicata.'; refresh(); }; const clean=document.createElement('button'); clean.className='secondary'; clean.textContent='Pulisci sfondo'; clean.onclick=()=>{ item.mode='clean'; item.status='Sfondo chiaro uniformato e ripulito.'; item.cleanMask=null; refresh(); }; const cut=document.createElement('button'); cut.textContent='Rimuovi sfondo'; cut.onclick=async()=>{ cut.disabled=true; try{ item.mode='cut'; const base=drawBasePhoto(item); await removeBackgroundAI(base,item,status); item.status='Sfondo rimosso. Controlla bene i bordi.'; refresh(); } catch(e){ item.mode='improve'; item.status='Errore scontorno: '+e.message; status.textContent=item.status; } finally { cut.disabled=false; } }; actions1.append(improve,clean,cut); sec.append(actions1); const actions2=document.createElement('div'); actions2.className='row'; const reset=document.createElement('button'); reset.className='soft'; reset.textContent='Ripristina automatico'; reset.onclick=()=>{ item.settings={brightness:108,contrast:103,saturate:100,warmth:0,sharp:12}; item.cleanMask=null; refresh(); }; const moveUp=document.createElement('button'); moveUp.className='soft'; moveUp.textContent='Sposta su'; moveUp.onclick=()=>{ if(i===0) return; [photos[i-1],photos[i]]=[photos[i],photos[i-1]]; redraw(); }; const moveDown=document.createElement('button'); moveDown.className='soft'; moveDown.textContent='Sposta giù'; moveDown.onclick=()=>{ if(i===photos.length-1) return; [photos[i+1],photos[i]]=[photos[i],photos[i+1]]; redraw(); }; const copy=document.createElement('button');copy.className='secondary';copy.textContent='Copia regolazioni su tutte';copy.onclick=()=>{if(!confirm('Copiare le regolazioni di questa foto sulle altre?'))return;photos.forEach(p=>{if(p!==item){p.settings={...item.settings};p.crop=item.crop;p.cleanMask=null;}});redraw();};actions2.append(reset,moveUp,moveDown,copy); sec.append(actions2); const actions3=document.createElement('div'); actions3.className='row'; const download=document.createElement('button'); download.className='soft'; download.textContent='Scarica questa foto'; download.onclick=async()=>{ const out=await getOutput(item,i); triggerDownload(out.blob,out.name); }; const removeBtn=document.createElement('button'); removeBtn.className='danger'; removeBtn.textContent='Elimina questa foto'; removeBtn.onclick=()=>{ cleanupItem(item); photos.splice(i,1); redraw(); }; actions3.append(download,removeBtn); sec.append(actions3); root.append(sec); refresh(); }); }
+function cleanupItem(item){ try{ URL.revokeObjectURL(item.url); }catch{} try{ if(item.aiMaskUrl) URL.revokeObjectURL(item.aiMaskUrl);}catch{} }
+function applyDefaultImprove(item){ item.settings={brightness:108,contrast:103,saturate:100,warmth:0,sharp:12}; item.mode='improve'; item.cleanMask=null; item.status='Correzione fotografica naturale applicata.'; }
+function applyDefaultClean(item){ if(item.settings.brightness===100&&item.settings.contrast===100&&item.settings.sharp===0) applyDefaultImprove(item); item.mode='clean'; item.cleanMask=null; item.status='Sfondo chiaro uniformato e ripulito.'; }
+function triggerDownload(blob,name){ const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.append(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),30000); }
+function safeSlug(s){ return (s||'vinted').toLowerCase().trim().replace(/[^a-z0-9àèéìòù_-]+/gi,'-').replace(/-+/g,'-').replace(/^[-]+|[-]+$/g,'') || 'vinted'; }
+async function getOutput(item,index){ const canvas=renderFinal(item); const png=item.mode==='cut' && $('#cutBackground').value==='transparent' && item.aiMaskImg; const blob=await canvasToBlob(canvas,png?'image/png':'image/jpeg',.94); const modeSuffix=item.mode==='clean'?'clean':(item.mode==='cut'?'cut':'photo'); const ext=png?'png':'jpg'; const prefix=safeSlug($('#filePrefix').value||'vinted'); const label=safeSlug(item.label || guessLabel(index,photos.length)); const num=String(index+1).padStart(2,'0'); return {blob,name:`${prefix}_${num}_${label}_${modeSuffix}.${ext}`}; }
+$('#files').onchange=async e=>{ for(const f of [...e.target.files]){ if(photos.some(p=>p.file.name===f.name&&p.file.size===f.size&&p.file.lastModified===f.lastModified)) continue; const url=URL.createObjectURL(f); try{ const img=await loadImage(url); const item={file:f,img,url,settings:defaults(),mode:'improve',cleanMask:null,aiMaskImg:null,aiMaskUrl:null,status:'',label:'',crop:0}; applyDefaultImprove(item); photos.push(item);} catch(err){ URL.revokeObjectURL(url); alert('Formato non leggibile: '+f.name);} } e.target.value=''; applyNames(); redraw(); };
+$('#autoImprove').onclick=()=>{ photos.forEach(applyDefaultImprove); redraw(); };
+$('#autoClean').onclick=()=>{ photos.forEach(applyDefaultClean); redraw(); };
+$('#clearAll').onclick=()=>{ if(!confirm('Eliminare tutte le foto dalla sessione?')) return; photos.forEach(cleanupItem); photos.length=0; redraw(); };
+$('#cutBackground').onchange=()=>redraw();
+$('#applyNames').onclick=()=>applyNames();
+$('#downloadAll').onclick=async()=>{ for(let i=0;i<photos.length;i++){ const out=await getOutput(photos[i],i); triggerDownload(out.blob,out.name);} };
+$('#downloadZip').onclick=async()=>{ const st=$('#downloadStatus'); if(!photos.length){ st.textContent='Carica almeno una foto.'; return; } if(!window.JSZip){ st.textContent='Libreria ZIP non disponibile.'; return; } try{ const zip=new JSZip(); for(let i=0;i<photos.length;i++){ st.textContent=`Preparo immagine ${i+1} di ${photos.length}…`; const out=await getOutput(photos[i],i); zip.file(out.name,out.blob); } st.textContent='Creo archivio ZIP…'; const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}}); triggerDownload(blob,'vinted-photos-v1-2.zip'); st.textContent='ZIP pronto.'; } catch(e){ st.textContent='Errore ZIP: '+e.message; } };
+</script>
+</body>
+</html>
