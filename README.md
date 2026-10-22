@@ -1,4 +1,4 @@
-# Vinted Photo Studio v2.0 — Studio Light
+# Vinted Photo Studio v2.1 — Studio Light
 
 App web iPhone: https://26ale93-lab.github.io/vinted-photo-studio/
 
@@ -12,13 +12,17 @@ App web iPhone: https://26ale93-lab.github.io/vinted-photo-studio/
 La separazione è affidabile solo quanto la segmentazione AI: bordi fini e prodotti chiari possono essere classificati male. Senza maschera AI gli stili si applicano all'intera foto. Verificare sempre fedeltà dei colori, loghi, condizioni e difetti del prodotto. La condivisione Safari richiede un'azione dell'utente per salvare nel rullino. Collaudo Safari iPhone da completare.
 
 
-## v2.0 — salvataggio multiplo nel rullino
+## v2.1 — salvataggio multiplo nel rullino
 Nella sezione «4. Salva le foto» è presente il pulsante **Salva tutte nel rullino**. Prepara le singole immagini elaborate e prova ad aprire il menu di condivisione iOS con tutti i file. Se Safari non supporta la condivisione multipla, offre automaticamente un archivio ZIP. Il salvataggio nell'app Foto richiede una conferma manuale dell'utente. La preparazione asincrona dei file può far perdere l'autorizzazione temporanea del gesto di Safari: funzione da verificare su iPhone reale.
 
 
-## v2.0 — Restyling premium
+## v2.1 — Restyling premium
 Palette blu notte e turchese, fondo grigio perla, contrasti più coerenti, anteprima fotografica e miniature rifinite, pulsanti e controlli iPhone più leggibili, salvataggio multiplo come azione principale. Funzionalità fotografiche invariate. Verificare in Safari su iPhone.
 
 
-## v2.0 — cambiamento cromatico evidente
+## v2.1 — cambiamento cromatico evidente
 Testata blu notte con testo bianco e bordo ciano; sfondo grigio azzurrato; azioni principali turchesi; pulsante salvataggio multiplo con gradiente blu/ciano. Tutti gli strumenti fotografici precedenti invariati.
+
+
+## v2.1: correzione regolazioni fotografiche
+La luminosità, il contrasto, la saturazione e il bilanciamento caldo/freddo sono calcolati direttamente sui pixel (senza dipendere da `CanvasRenderingContext2D.filter`). Il comando Migliora foto ricalcola ora l'ottimizzazione automatica e aggiorna i cursori. Range ampliati per permettere di vedere l'effetto delle regolazioni. Le modifiche sono più evidenti, ma per gli annunci reali mantenere colori e difetti fedeli. Da testare su Safari iPhone.
