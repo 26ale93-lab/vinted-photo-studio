@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#102039">
-<title>Vinted Photo Studio — iPhone v2.1</title>
+<title>Vinted Photo Studio — iPhone v2.2</title>
 <style>
 :root{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f3f6f5;color:#1b2e2c}
 *{box-sizing:border-box}body{margin:0;background:#f3f6f5}
@@ -275,6 +275,28 @@ function cropCanvas(c,item){
  if(w<1||h<1)return c;
  const out=makeCanvas(w,h);out.getContext('2d').drawImage(c,x,y,w,h,0,0,w,h);return out;
 }
+function safeLayoutCanvas(source,item){
+ const state=item.layoutDraft||item.layout||{rotation:0,x:0,y:0};
+ const angle=clamp(Number(state.rotation)||0,-15,15)*Math.PI/180;
+ const shiftX=clamp(Number(state.x)||0,-12,12)/100;
+ const shiftY=clamp(Number(state.y)||0,-12,12)/100;
+ if(Math.abs(angle)<.0001&&!shiftX&&!shiftY)return source;
+ const w=source.width,h=source.height;
+ const rotatedWidth=Math.abs(w*Math.cos(angle))+Math.abs(h*Math.sin(angle));
+ const rotatedHeight=Math.abs(w*Math.sin(angle))+Math.abs(h*Math.cos(angle));
+ // Fit the entire rotated photo in the original frame; no changes to product geometry.
+ const fit=Math.min(1,w/rotatedWidth,h/rotatedHeight);
+ const room=shiftX||shiftY?.88:1;
+ const scale=fit*room;
+ const halfW=(rotatedWidth*scale)/2,halfH=(rotatedHeight*scale)/2;
+ const offsetX=clamp(shiftX*w,-(w/2-halfW),w/2-halfW);
+ const offsetY=clamp(shiftY*h,-(h/2-halfH),h/2-halfH);
+ const result=makeCanvas(w,h),ctx=result.getContext('2d');
+ ctx.fillStyle='#ffffff';ctx.fillRect(0,0,w,h);
+ ctx.translate(w/2+offsetX,h/2+offsetY);ctx.rotate(angle);ctx.scale(scale,scale);
+ ctx.drawImage(source,-w/2,-h/2);
+ return result;
+}
 function drawBasePhoto(item){
  const {w,h}=scaledDimensions(item.img);
  const out=makeCanvas(w,h),ctx=out.getContext('2d',{willReadFrequently:true});
@@ -361,9 +383,9 @@ function renderFinal(item){
    for(let p=0;p<d.length;p+=4){const a=d[p+3]/255;for(let k=0;k<3;k++)out.data[p+k]=out.data[p+k]*a+raw.data[p+k]*(1-a);}
    edited.getContext('2d').putImageData(out,0,0);
  }
- if(item.mode==='clean')return cropCanvas(cleanBackground(edited,item),item);
- if(item.mode==='cut'&&item.aiMaskImg)return cropCanvas(composeCutout(edited,item.aiMaskImg,$('#cutBackground').value),item);
- return cropCanvas(edited,item);
+ if(item.mode==='clean')return cropCanvas(safeLayoutCanvas(cleanBackground(edited,item),item),item);
+ if(item.mode==='cut'&&item.aiMaskImg)return cropCanvas(safeLayoutCanvas(composeCutout(edited,item.aiMaskImg,$('#cutBackground').value),item),item);
+ return cropCanvas(safeLayoutCanvas(edited,item),item);
 }
 function previewDataUrl(item){ const c=renderFinal(item); const png=item.mode==='cut' && $('#cutBackground').value==='transparent' && item.aiMaskImg; return c.toDataURL(png?'image/png':'image/jpeg',.86); }
 function makeSlider(item,key,label,min,max,parent,onChange){ const row=document.createElement('label'); row.className='range'; const left=document.createElement('span'); left.textContent=label; const right=document.createElement('span'); right.textContent=item.settings[key]; row.append(left,right); parent.append(row); const range=document.createElement('input'); range.type='range'; range.min=min; range.max=max; range.value=item.settings[key]; range.oninput=()=>{ item.settings[key]=Number(range.value); right.textContent=range.value; item.cleanMask=null; onChange(); }; parent.append(range); }
@@ -423,7 +445,25 @@ function redraw(){
  const bgTitle=document.createElement('div');bgTitle.className='toolbarTitle';bgTitle.textContent='02  ·  Sfondo';sec.append(bgTitle);
  const actions1=document.createElement('div'); actions1.className='row'; const improve=document.createElement('button'); improve.className='secondary'; improve.textContent='Migliora foto'; improve.onclick=()=>{ applyDefaultImprove(item); redraw(); }; const clean=document.createElement('button'); clean.className='secondary'; clean.textContent='Pulisci sfondo'; clean.onclick=()=>{ item.mode='clean'; item.status='Sfondo chiaro uniformato e ripulito.'; item.cleanMask=null; refresh(); }; const precise=document.createElement('button');precise.className='secondary';precise.textContent='Pulizia precisa AI';
  precise.onclick=async()=>{precise.disabled=true;try{await removeBackgroundAI(drawBasePhoto(item),item,status);item.mode='clean';item.status='Pulizia AI attivata. Controlla i bordi del prodotto.';refresh();}catch(e){item.status='Pulizia AI non disponibile: '+e.message;status.textContent=item.status;}finally{precise.disabled=false;}};
- const cut=document.createElement('button'); cut.textContent='Rimuovi sfondo'; cut.onclick=async()=>{ cut.disabled=true; try{ item.mode='cut'; const base=drawBasePhoto(item); await removeBackgroundAI(base,item,status); item.status='Sfondo rimosso. Controlla bene i bordi.'; refresh(); } catch(e){ item.mode='improve'; item.status='Errore scontorno: '+e.message; status.textContent=item.status; } finally { cut.disabled=false; } }; actions1.append(improve,precise,cut);const quickDetails=document.createElement('details');quickDetails.style.marginTop='9px';const summary=document.createElement('summary');summary.textContent='Altri strumenti: pulizia rapida';summary.style.fontSize='13px';summary.style.cursor='pointer';quickDetails.append(summary,clean);sec.append(actions1,quickDetails); const actions2=document.createElement('div'); actions2.className='row'; const reset=document.createElement('button'); reset.className='soft'; reset.textContent='Ripristina automatico'; reset.onclick=()=>{ applyDefaultImprove(item); refresh(); }; const moveUp=document.createElement('button'); moveUp.className='soft'; moveUp.textContent='Sposta su'; moveUp.onclick=()=>{ if(i===0) return; [photos[i-1],photos[i]]=[photos[i],photos[i-1]]; activePhotoIndex=i-1; redraw(); }; const moveDown=document.createElement('button'); moveDown.className='soft'; moveDown.textContent='Sposta giù'; moveDown.onclick=()=>{ if(i===photos.length-1) return; [photos[i+1],photos[i]]=[photos[i],photos[i+1]]; activePhotoIndex=i+1; redraw(); }; const copy=document.createElement('button');copy.className='secondary';copy.textContent='Copia regolazioni su tutte';copy.onclick=()=>{if(!confirm('Copiare le regolazioni di questa foto sulle altre?'))return;photos.forEach(p=>{if(p!==item){p.settings={...item.settings};p.crop=item.crop;p.cleanStrength=item.cleanStrength;p.cleanMask=null;}});redraw();};actions2.append(reset,moveUp,moveDown,copy); sec.append(actions2); const actions3=document.createElement('div'); actions3.className='row'; const download=document.createElement('button'); download.className='soft'; download.textContent='Scarica questa foto'; download.onclick=async()=>{ const out=await getOutput(item,i); triggerDownload(out.blob,out.name); }; const removeBtn=document.createElement('button'); removeBtn.className='danger'; removeBtn.textContent='Elimina questa foto'; removeBtn.onclick=()=>{ cleanupItem(item); photos.splice(i,1); activePhotoIndex=Math.min(i,photos.length-1); redraw(); }; const toPhotos=document.createElement('button');toPhotos.textContent='Salva nel rullino';toPhotos.onclick=()=>shareImageToPhotos(item,i,toPhotos); actions3.append(toPhotos,download,removeBtn);sec.append(actions3); root.append(sec); refresh(); }); }
+ const cut=document.createElement('button'); cut.textContent='Rimuovi sfondo'; cut.onclick=async()=>{ cut.disabled=true; try{ item.mode='cut'; const base=drawBasePhoto(item); await removeBackgroundAI(base,item,status); item.status='Sfondo rimosso. Controlla bene i bordi.'; refresh(); } catch(e){ item.mode='improve'; item.status='Errore scontorno: '+e.message; status.textContent=item.status; } finally { cut.disabled=false; } }; actions1.append(improve,precise,cut);const quickDetails=document.createElement('details');quickDetails.style.marginTop='9px';const summary=document.createElement('summary');summary.textContent='Altri strumenti: pulizia rapida';summary.style.fontSize='13px';summary.style.cursor='pointer';quickDetails.append(summary,clean);sec.append(actions1,quickDetails); const garment=document.createElement('details');garment.className='adjustPanel garmentPanel';
+ const garmentSummary=document.createElement('summary');garmentSummary.textContent='Sistema capo · allineamento sicuro';garment.append(garmentSummary);
+ const garmentHint=document.createElement('p');garmentHint.className='sub';garmentHint.textContent='Raddrizza e centra l’intera fotografia, senza deformare il capo né modificare pieghe, maniche o difetti.';garment.append(garmentHint);
+ const draft=item.layoutDraft||item.layout||{rotation:0,x:0,y:0};item.layoutDraft={...draft};
+ function garmentSlider(label,key,min,max,unit){
+  const caption=document.createElement('label');caption.className='range';
+  const left=document.createElement('span');left.textContent=label;const value=document.createElement('span');value.textContent=(item.layoutDraft[key]||0)+unit;
+  caption.append(left,value);garment.append(caption);
+  const slider=document.createElement('input');slider.type='range';slider.min=min;slider.max=max;slider.step='1';slider.value=item.layoutDraft[key]||0;
+  slider.oninput=()=>{item.layoutDraft[key]=Number(slider.value);value.textContent=slider.value+unit;refresh();};garment.append(slider);
+ }
+ garmentSlider('Raddrizza','rotation',-15,15,'°');garmentSlider('Centra orizzontalmente','x',-12,12,'%');garmentSlider('Centra verticalmente','y',-12,12,'%');
+ const aiInfo=document.createElement('p');aiInfo.className='small';aiInfo.textContent='Riordino AI della posa: non disponibile. Nessuna modifica generativa di maniche o tessuto.';garment.append(aiInfo);
+ const garmentActions=document.createElement('div');garmentActions.className='row';
+ const applyLayout=document.createElement('button');applyLayout.textContent='Applica';applyLayout.onclick=()=>{item.layout={...item.layoutDraft};item.status='Allineamento applicato; prodotto non deformato.';refresh();};
+ const cancelLayout=document.createElement('button');cancelLayout.className='secondary';cancelLayout.textContent='Annulla';cancelLayout.onclick=()=>{item.layoutDraft={...(item.layout||{rotation:0,x:0,y:0})};redraw();};
+ const restoreLayout=document.createElement('button');restoreLayout.className='soft';restoreLayout.textContent='Ripristina';restoreLayout.onclick=()=>{item.layout={rotation:0,x:0,y:0};item.layoutDraft={...item.layout};item.status='Allineamento originale ripristinato.';redraw();};
+ garmentActions.append(applyLayout,cancelLayout,restoreLayout);garment.append(garmentActions);sec.append(garment);
+ const actions2=document.createElement('div'); actions2.className='row'; const reset=document.createElement('button'); reset.className='soft'; reset.textContent='Ripristina automatico'; reset.onclick=()=>{ applyDefaultImprove(item); refresh(); }; const moveUp=document.createElement('button'); moveUp.className='soft'; moveUp.textContent='Sposta su'; moveUp.onclick=()=>{ if(i===0) return; [photos[i-1],photos[i]]=[photos[i],photos[i-1]]; activePhotoIndex=i-1; redraw(); }; const moveDown=document.createElement('button'); moveDown.className='soft'; moveDown.textContent='Sposta giù'; moveDown.onclick=()=>{ if(i===photos.length-1) return; [photos[i+1],photos[i]]=[photos[i],photos[i+1]]; activePhotoIndex=i+1; redraw(); }; const copy=document.createElement('button');copy.className='secondary';copy.textContent='Copia regolazioni su tutte';copy.onclick=()=>{if(!confirm('Copiare le regolazioni di questa foto sulle altre?'))return;photos.forEach(p=>{if(p!==item){p.settings={...item.settings};p.crop=item.crop;p.cleanStrength=item.cleanStrength;p.cleanMask=null;}});redraw();};actions2.append(reset,moveUp,moveDown,copy); sec.append(actions2); const actions3=document.createElement('div'); actions3.className='row'; const download=document.createElement('button'); download.className='soft'; download.textContent='Scarica questa foto'; download.onclick=async()=>{ const out=await getOutput(item,i); triggerDownload(out.blob,out.name); }; const removeBtn=document.createElement('button'); removeBtn.className='danger'; removeBtn.textContent='Elimina questa foto'; removeBtn.onclick=()=>{ cleanupItem(item); photos.splice(i,1); activePhotoIndex=Math.min(i,photos.length-1); redraw(); }; const toPhotos=document.createElement('button');toPhotos.textContent='Salva nel rullino';toPhotos.onclick=()=>shareImageToPhotos(item,i,toPhotos); actions3.append(toPhotos,download,removeBtn);sec.append(actions3); root.append(sec); refresh(); }); }
 function cleanupItem(item){ try{ URL.revokeObjectURL(item.url); }catch{} try{ if(item.aiMaskUrl) URL.revokeObjectURL(item.aiMaskUrl);}catch{} }
 function applyDefaultImprove(item){
  const cv=makeCanvas(160,160),cx=cv.getContext('2d',{willReadFrequently:true});cx.drawImage(item.img,0,0,160,160);
@@ -472,7 +512,7 @@ function showImageSavePanel(blob){
 function triggerDownload(blob,name){ const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=name; document.body.append(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),30000); }
 function safeSlug(s){ return (s||'vinted').toLowerCase().trim().replace(/[^a-z0-9àèéìòù_-]+/gi,'-').replace(/-+/g,'-').replace(/^[-]+|[-]+$/g,'') || 'vinted'; }
 async function getOutput(item,index){ const canvas=renderFinal(item); const png=item.mode==='cut' && $('#cutBackground').value==='transparent' && item.aiMaskImg; const blob=await canvasToBlob(canvas,png?'image/png':'image/jpeg',.94); const modeSuffix=item.mode==='clean'?'clean':(item.mode==='cut'?'cut':'photo'); const ext=png?'png':'jpg'; const prefix=safeSlug($('#filePrefix').value||'vinted'); const label=safeSlug(item.label || guessLabel(index,photos.length)); const num=String(index+1).padStart(2,'0'); return {blob,name:`${prefix}_${num}_${label}_${modeSuffix}.${ext}`}; }
-$('#files').onchange=async e=>{ for(const f of [...e.target.files]){ if(photos.some(p=>p.file.name===f.name&&p.file.size===f.size&&p.file.lastModified===f.lastModified)) continue; const url=URL.createObjectURL(f); try{ const img=await loadImage(url); const item={file:f,img,url,settings:defaults(),mode:'improve',cleanMask:null,aiMaskImg:null,aiMaskUrl:null,status:'',label:'',crop:0,cleanStrength:85}; applyDefaultImprove(item); photos.push(item);} catch(err){ URL.revokeObjectURL(url); alert('Formato non leggibile: '+f.name);} } e.target.value=''; applyNames();activePhotoIndex=Math.max(0,photos.length-1);redraw(); };
+$('#files').onchange=async e=>{ for(const f of [...e.target.files]){ if(photos.some(p=>p.file.name===f.name&&p.file.size===f.size&&p.file.lastModified===f.lastModified)) continue; const url=URL.createObjectURL(f); try{ const img=await loadImage(url); const item={file:f,img,url,settings:defaults(),mode:'improve',cleanMask:null,aiMaskImg:null,aiMaskUrl:null,status:'',label:'',crop:0,cleanStrength:85,layout:{rotation:0,x:0,y:0},layoutDraft:{rotation:0,x:0,y:0}}; applyDefaultImprove(item); photos.push(item);} catch(err){ URL.revokeObjectURL(url); alert('Formato non leggibile: '+f.name);} } e.target.value=''; applyNames();activePhotoIndex=Math.max(0,photos.length-1);redraw(); };
 $('#autoImprove').onclick=()=>{ photos.forEach(applyDefaultImprove); redraw(); };
 $('#autoClean').onclick=()=>{ photos.forEach(applyDefaultClean); redraw(); };
 $('#clearAll').onclick=()=>{ if(!confirm('Eliminare tutte le foto dalla sessione?')) return; photos.forEach(cleanupItem); photos.length=0;activePhotoIndex=0; redraw(); };
@@ -505,7 +545,7 @@ $('#shareAllPhotos').onclick=async()=>{
    if(!window.JSZip)throw Error('Libreria ZIP non disponibile. Usa «Salva nel rullino» sotto ciascuna foto.');
    const zip=new JSZip();outputs.forEach(o=>zip.file(o.name,o.blob));
    const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});
-   triggerDownload(blob,'vinted-foto-v2-1.zip');
+   triggerDownload(blob,'vinted-foto-v2-2.zip');
    st.textContent='ZIP scaricato come alternativa: aprilo in File per gestire le immagini.';
  }catch(e){st.textContent='Impossibile salvare tutte le foto: '+(e.message||e);}
  finally{button.disabled=false;button.textContent='Salva tutte nel rullino';}
