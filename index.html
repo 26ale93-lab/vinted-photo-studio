@@ -275,8 +275,8 @@ function cropCanvas(c,item){
  if(w<1||h<1)return c;
  const out=makeCanvas(w,h);out.getContext('2d').drawImage(c,x,y,w,h,0,0,w,h);return out;
 }
-function safeLayoutCanvas(source,item){
- const state=item.layoutDraft||item.layout||{rotation:0,x:0,y:0};
+function safeLayoutCanvas(source,item,preview=false){
+ const state=(preview?item.layoutDraft:null)||item.layout||{rotation:0,x:0,y:0};
  const angle=clamp(Number(state.rotation)||0,-15,15)*Math.PI/180;
  const shiftX=clamp(Number(state.x)||0,-12,12)/100;
  const shiftY=clamp(Number(state.y)||0,-12,12)/100;
@@ -286,7 +286,7 @@ function safeLayoutCanvas(source,item){
  const rotatedHeight=Math.abs(w*Math.sin(angle))+Math.abs(h*Math.cos(angle));
  // Fit the entire rotated photo in the original frame; no changes to product geometry.
  const fit=Math.min(1,w/rotatedWidth,h/rotatedHeight);
- const room=shiftX||shiftY?.88:1;
+ const room=(shiftX!==0||shiftY!==0)?0.88:1;
  const scale=fit*room;
  const halfW=(rotatedWidth*scale)/2,halfH=(rotatedHeight*scale)/2;
  const offsetX=clamp(shiftX*w,-(w/2-halfW),w/2-halfW);
@@ -369,7 +369,7 @@ function cleanBackground(baseCanvas,item){
 }
 async function removeBackgroundAI(baseCanvas,item,statusEl){ if(item.aiMaskImg) return item.aiMaskImg; statusEl.textContent='Caricamento modello e rimozione dello sfondo…'; const mod=await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm'); const removeBackground=mod.default || mod.removeBackground; if(!removeBackground) throw new Error('Modulo AI non disponibile'); const scale=Math.min(1,1600/baseCanvas.width,1600/baseCanvas.height); const rw=Math.max(1,Math.round(baseCanvas.width*scale)), rh=Math.max(1,Math.round(baseCanvas.height*scale)); const reduced=makeCanvas(rw,rh); reduced.getContext('2d').drawImage(baseCanvas,0,0,rw,rh); const reducedBlob=await canvasToBlob(reduced,'image/png'); const resultBlob=await removeBackground(reducedBlob); const url=URL.createObjectURL(resultBlob); const maskImg=await loadImage(url); item.aiMaskImg=maskImg; item.aiMaskUrl=url; return maskImg; }
 function composeCutout(baseCanvas,maskImg,bgMode){ const w=baseCanvas.width,h=baseCanvas.height; const out=makeCanvas(w,h); const ctx=out.getContext('2d',{willReadFrequently:true}); ctx.drawImage(baseCanvas,0,0); const maskLayer=makeCanvas(w,h); const mctx=maskLayer.getContext('2d'); mctx.drawImage(maskImg,0,0,w,h); const maskData=mctx.getImageData(0,0,w,h); const imageData=ctx.getImageData(0,0,w,h); for(let i=0;i<imageData.data.length;i+=4) imageData.data[i+3]=maskData.data[i+3]; ctx.putImageData(imageData,0,0); if(bgMode==='transparent') return out; if(bgMode==='original') return baseCanvas; const comp=makeCanvas(w,h); const cctx=comp.getContext('2d'); cctx.fillStyle=bgMode==='white'?'#ffffff':'#f2f3f3'; cctx.fillRect(0,0,w,h); cctx.drawImage(out,0,0); return comp; }
-function renderFinal(item){
+function renderFinal(item,preview=false){
  const edited=drawBasePhoto(item);
  if(item.aiMaskImg && (item.mode==='clean'||item.mode==='cut')){
    const untouched=makeCanvas(edited.width,edited.height);
@@ -383,11 +383,11 @@ function renderFinal(item){
    for(let p=0;p<d.length;p+=4){const a=d[p+3]/255;for(let k=0;k<3;k++)out.data[p+k]=out.data[p+k]*a+raw.data[p+k]*(1-a);}
    edited.getContext('2d').putImageData(out,0,0);
  }
- if(item.mode==='clean')return cropCanvas(safeLayoutCanvas(cleanBackground(edited,item),item),item);
- if(item.mode==='cut'&&item.aiMaskImg)return cropCanvas(safeLayoutCanvas(composeCutout(edited,item.aiMaskImg,$('#cutBackground').value),item),item);
- return cropCanvas(safeLayoutCanvas(edited,item),item);
+ if(item.mode==='clean')return cropCanvas(safeLayoutCanvas(cleanBackground(edited,item),item,preview),item);
+ if(item.mode==='cut'&&item.aiMaskImg)return cropCanvas(safeLayoutCanvas(composeCutout(edited,item.aiMaskImg,$('#cutBackground').value),item,preview),item);
+ return cropCanvas(safeLayoutCanvas(edited,item,preview),item);
 }
-function previewDataUrl(item){ const c=renderFinal(item); const png=item.mode==='cut' && $('#cutBackground').value==='transparent' && item.aiMaskImg; return c.toDataURL(png?'image/png':'image/jpeg',.86); }
+function previewDataUrl(item){ const c=renderFinal(item,true); const png=item.mode==='cut' && $('#cutBackground').value==='transparent' && item.aiMaskImg; return c.toDataURL(png?'image/png':'image/jpeg',.86); }
 function makeSlider(item,key,label,min,max,parent,onChange){ const row=document.createElement('label'); row.className='range'; const left=document.createElement('span'); left.textContent=label; const right=document.createElement('span'); right.textContent=item.settings[key]; row.append(left,right); parent.append(row); const range=document.createElement('input'); range.type='range'; range.min=min; range.max=max; range.value=item.settings[key]; range.oninput=()=>{ item.settings[key]=Number(range.value); right.textContent=range.value; item.cleanMask=null; onChange(); }; parent.append(range); }
 function modeBadges(item){ const wrap=document.createElement('div'); const map={ improve:['Migliora foto','badge-ok'], clean:['Pulisci sfondo','badge-warn'], cut:['Rimuovi sfondo','badge-soft'] }; Object.entries(map).forEach(([key,[txt,cls]])=>{ const b=document.createElement('span'); b.className='badge '+cls; b.textContent=item.mode===key ? 'Modalità attiva: '+txt : txt; wrap.append(b); }); return wrap; }
 function guessLabel(index,total){ const labels=['fronte','retro','lato','dettaglio','etichetta','suola','dettaglio-2','dettaglio-3','extra']; if($('#namePreset').value==='generic') return String(index+1).padStart(2,'0'); return labels[index] || ('extra-'+String(index+1).padStart(2,'0')); }
