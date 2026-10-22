@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#f5f7fa">
-<title>Vinted Photo Studio — iPhone v1.9</title>
+<meta name="theme-color" content="#102039">
+<title>Vinted Photo Studio — iPhone v2.0</title>
 <style>
 :root{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f3f6f5;color:#1b2e2c}
 *{box-sizing:border-box}body{margin:0;background:#f3f6f5}
@@ -25,7 +25,7 @@ input[type=file]{width:100%;font-size:14px}input[type=range]{width:100%;accent-c
 .list{padding-left:18px;margin:8px 0;font-size:12px;color:#516661;line-height:1.5}.small{font-size:11px;color:#6b7d79}.stack{display:grid;gap:8px}.toolbarTitle{font-size:13px;font-weight:700;color:#35534d;margin:10px 0 4px}
 footer{padding:20px 0 10px;text-align:center;color:#667b76;font-size:12px}
 
-/* Studio Light — interface v1.9 */
+/* Studio Light — interface v2.0 */
 :root{--ink:#19342f;--teal:#087b71;--line:#dae8e3}
 body{background:#edf2f0;color:var(--ink)}
 header{background:#fff;color:var(--ink);padding:calc(16px + env(safe-area-inset-top)) 18px 18px;border-bottom:1px solid var(--line)}
@@ -62,7 +62,7 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 @media(min-width:700px){.comparison{aspect-ratio:4/3;max-height:580px}}
 
 
-/* v1.9: professional mobile studio */
+/* v2.0: professional mobile studio */
 :root{--brand:#087d72;--ink:#18302c;--muted:#657a74}
 header{position:sticky;top:0;z-index:30;box-shadow:0 5px 22px #203e3509;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);background:#fefefef0}
 header:before{content:'STUDIO EDITION';font-size:9px;font-weight:850;letter-spacing:2.4px;color:#36887a;display:block;margin-bottom:5px}
@@ -85,7 +85,7 @@ main{padding-top:18px}
 #downloadStatus{min-height:18px}
 @media(max-width:460px){.studioWorkspace{padding:12px}.comparison{max-height:55vh}.photo .row button{font-size:12px;padding:12px 8px}}
 
-/* Vinted Photo Studio v1.9 — editorial premium UI */
+/* Vinted Photo Studio v2.0 — editorial premium UI */
 :root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--navy:#17263b;--teal:#087d83;--mint:#ddf4ef;--paper:#f5f7fa;--line:#e2e8ed;--muted:#68798b;--focus:#15a5a4;color:var(--navy);background:var(--paper)}
 body{background:radial-gradient(ellipse at 50% -4%,#e8f7f3 0%,#f5f7fa 45%,#f5f7fa 100%);color:var(--navy)}
 header{position:sticky;top:0;z-index:30;background:#ffffffed;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid #dfebe9;box-shadow:0 5px 22px #1a3d4410;padding:calc(11px + env(safe-area-inset-top)) 17px 13px}
@@ -140,12 +140,44 @@ input[type=text],select{border:1px solid #d8e4e8;background:#fbfcfd;border-radiu
 footer{font-size:11px;color:#8794a1;padding-bottom:18px}
 @media(min-width:650px){.comparison{aspect-ratio:4/3;max-height:600px}.studioWorkspace{padding:22px}}
 @media(max-width:420px){.card{padding:15px;border-radius:20px}.studioWorkspace{padding:12px}.comparison{max-height:56vh}.photo .row button{padding:12px 8px;font-size:12px}header h1{font-size:21px}}
+
+/* v2.0 — visible visual overhaul: midnight blue + vivid cyan */
+:root{--navy:#102039;--teal:#06a9bb;--brand:#08a3b5;--ink:#102039;--paper:#edf3f8;--muted:#62758e}
+body{background:linear-gradient(180deg,#dceaf3 0,#f1f5fa 470px,#eef3f8 100%);color:#102039}
+header{background:linear-gradient(118deg,#102039 0%,#143b53 70%,#086b79 100%)!important;border-bottom:3px solid #1ec5d3!important;box-shadow:0 14px 28px #10263d26!important;color:white!important;padding:calc(20px + env(safe-area-inset-top)) 22px 24px!important}
+header:before{color:#6de4df!important;letter-spacing:2.6px!important}
+header h1{color:#fff!important;font-size:25px!important;letter-spacing:-.9px}
+header p{color:#c2dce7!important;opacity:1!important;font-weight:500}
+main{padding-top:20px}
+.card{border:1px solid #d9e5ee!important;box-shadow:0 14px 34px #12334c13!important}
+.card h2{color:#122640!important}
+#workspace{border:2px solid #c7e5eb!important}
+.workspaceCount{background:#122c45!important;color:#fff!important;border:none!important}
+#files{background:#eaf7fb!important;border:2px dashed #84bdcc!important}
+#autoImprove{background:#dff5f6!important;color:#07596b!important}
+#autoClean{background:#c9eff1!important;color:#07596b!important}
+#clearAll{background:#ecf1f6!important;color:#344961!important}
+button:not(.secondary):not(.soft):not(.danger){background:#078fa2;color:#fff}
+button.secondary{background:#def4f6;color:#086479}
+button.soft{background:#e9eff5;color:#344760}
+button.danger{background:#ffebe9;color:#a63c40}
+#shareAllPhotos{background:linear-gradient(110deg,#076ca2,#06b2bb)!important;color:white!important;box-shadow:0 11px 22px #087eaa4d!important}
+#downloadZip{background:#193a59!important;color:white!important}
+#downloadAll{background:#d8edf3!important;color:#17485e!important}
+input[type=range]{accent-color:#079fb1!important}
+.thumb.selected{border-color:#07a6b7!important;box-shadow:0 0 0 3px #b8e9f0!important}
+.comparison .line{background:#00b2c2!important}
+.note{background:#ebf8fb!important;border-color:#cbe9f0!important}
+.warning{background:#fff9ed!important}
+#photos .toolbarTitle{color:#174b65!important}
+#photos .photo>.row button:first-child{background:#0a98a9;color:#fff}
+footer{color:#5d748a}
 </style>
 </head>
 <body>
 <header>
   <h1>Vinted Photo Studio</h1>
-  <p>v1.9 · Migliora foto · Pulisci sfondo · Rimuovi sfondo · Download</p>
+  <p>v2.0 · Migliora foto · Pulisci sfondo · Rimuovi sfondo · Download</p>
 </header>
 <main>
   <section class="card">
@@ -222,7 +254,7 @@ footer{font-size:11px;color:#8794a1;padding-bottom:18px}
     <p id="downloadStatus" class="progress"></p>
     <p class="small">Su iPhone, se Safari blocca più download consecutivi, usa lo ZIP.</p>
   </section>
-  <footer>Vinted Photo Studio v1.9 · versione focalizzata sulle immagini</footer>
+  <footer>Vinted Photo Studio v2.0 · versione focalizzata sulle immagini</footer>
 </main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script type="module">
@@ -439,7 +471,7 @@ $('#shareAllPhotos').onclick=async()=>{
    if(!window.JSZip)throw Error('Libreria ZIP non disponibile. Usa «Salva nel rullino» sotto ciascuna foto.');
    const zip=new JSZip();outputs.forEach(o=>zip.file(o.name,o.blob));
    const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});
-   triggerDownload(blob,'vinted-foto-v1-9.zip');
+   triggerDownload(blob,'vinted-foto-v2-0.zip');
    st.textContent='ZIP scaricato come alternativa: aprilo in File per gestire le immagini.';
  }catch(e){st.textContent='Impossibile salvare tutte le foto: '+(e.message||e);}
  finally{button.disabled=false;button.textContent='Salva tutte nel rullino';}
