@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#102039">
-<title>Vinted Photo Studio — iPhone v2.0</title>
+<title>Vinted Photo Studio — iPhone v2.1</title>
 <style>
 :root{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f3f6f5;color:#1b2e2c}
 *{box-sizing:border-box}body{margin:0;background:#f3f6f5}
@@ -275,7 +275,41 @@ function cropCanvas(c,item){
  if(w<1||h<1)return c;
  const out=makeCanvas(w,h);out.getContext('2d').drawImage(c,x,y,w,h,0,0,w,h);return out;
 }
-function drawBasePhoto(item){ const {w,h}=scaledDimensions(item.img); const out=makeCanvas(w,h); const ctx=out.getContext('2d',{willReadFrequently:true}); const s=item.settings; ctx.filter=`brightness(${s.brightness}%) contrast(${s.contrast}%) saturate(${s.saturate}%)`; ctx.drawImage(item.img,0,0,w,h); ctx.filter='none'; if(s.warmth!==0){ ctx.save(); ctx.globalCompositeOperation='soft-light'; ctx.fillStyle=s.warmth>0?`rgba(255,145,40,${Math.abs(s.warmth)/320})`:`rgba(55,120,255,${Math.abs(s.warmth)/320})`; ctx.fillRect(0,0,w,h); ctx.restore(); } if(s.sharp>0){ const imgData=ctx.getImageData(0,0,w,h); const src=new Uint8ClampedArray(imgData.data); const z=clamp(s.sharp/100,0,.45); for(let y=1;y<h-1;y++){ for(let x=1;x<w-1;x++){ const idx=(y*w+x)*4; for(let k=0;k<3;k++){ const edge=5*src[idx+k]-src[idx-4+k]-src[idx+4+k]-src[idx-w*4+k]-src[idx+w*4+k]; imgData.data[idx+k]=clamp(src[idx+k]*(1-z)+edge*z,0,255); } } } ctx.putImageData(imgData,0,0);} return out; }
+function drawBasePhoto(item){
+ const {w,h}=scaledDimensions(item.img);
+ const out=makeCanvas(w,h),ctx=out.getContext('2d',{willReadFrequently:true});
+ ctx.drawImage(item.img,0,0,w,h);
+ const im=ctx.getImageData(0,0,w,h),d=im.data,s=item.settings;
+ // Pixel processing: consistent on iOS Safari, independent of canvas context filter support.
+ const gain=clamp(s.brightness/100,.35,1.8);
+ const contrast=clamp(s.contrast/100,.4,1.7);
+ const sat=clamp(s.saturate/100,0,1.8);
+ const warm=clamp(s.warmth,-50,50)*.52;
+ for(let i=0;i<d.length;i+=4){
+   let r=d[i]*gain,g=d[i+1]*gain,b=d[i+2]*gain;
+   r=(r-127.5)*contrast+127.5+warm;
+   g=(g-127.5)*contrast+127.5;
+   b=(b-127.5)*contrast+127.5-warm;
+   const gray=.2126*r+.7152*g+.0722*b;
+   d[i]=clamp(gray+(r-gray)*sat,0,255);
+   d[i+1]=clamp(gray+(g-gray)*sat,0,255);
+   d[i+2]=clamp(gray+(b-gray)*sat,0,255);
+ }
+ ctx.putImageData(im,0,0);
+ if(s.sharp>0){
+   const im2=ctx.getImageData(0,0,w,h),dst=im2.data,src=new Uint8ClampedArray(dst);
+   const z=clamp(s.sharp/100,0,.35);
+   for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){
+     const k=(y*w+x)*4;
+     for(let ch=0;ch<3;ch++){
+       const edge=5*src[k+ch]-src[k-4+ch]-src[k+4+ch]-src[k-w*4+ch]-src[k+w*4+ch];
+       dst[k+ch]=clamp(src[k+ch]*(1-z)+edge*z,0,255);
+     }
+   }
+   ctx.putImageData(im2,0,0);
+ }
+ return out;
+}
 function rgbAt(data, idx){ return [data[idx], data[idx+1], data[idx+2]]; }
 function dist(a,b){ return Math.sqrt((a[0]-b[0])**2+(a[1]-b[1])**2+(a[2]-b[2])**2); }
 function estimateBgColor(data,w,h){ const pts=[[2,2],[w-3,2],[2,h-3],[w-3,h-3],[Math.floor(w/2),2],[Math.floor(w/2),h-3],[2,Math.floor(h/2)],[w-3,Math.floor(h/2)]]; const vals=[]; for(const [x,y] of pts){ const i=(y*w+x)*4; vals.push(rgbAt(data,i)); } const avg=[0,0,0]; vals.forEach(v=>{avg[0]+=v[0];avg[1]+=v[1];avg[2]+=v[2];}); avg[0]/=vals.length; avg[1]/=vals.length; avg[2]/=vals.length; return avg; }
@@ -359,7 +393,7 @@ function redraw(){
  let previewTimer;
  const refresh=()=>{clearTimeout(previewTimer);previewTimer=setTimeout(()=>{try{edited.src=previewDataUrl(item);}catch(e){status.textContent='Anteprima non disponibile: '+e.message;}},160);status.textContent=item.status||'';const newBadges=modeBadges(item);badges.replaceWith(newBadges);badges=newBadges;};
  const adjustDetails=document.createElement('details');adjustDetails.className='adjustPanel';const adjustSummary=document.createElement('summary');adjustSummary.textContent='Regolazioni manuali · prodotto e sfondo';adjustDetails.append(adjustSummary);sec.append(adjustDetails);
- const labelWrap=document.createElement('div'); labelWrap.className='stack'; const labelTitle=document.createElement('div'); labelTitle.className='sub'; labelTitle.textContent='Etichetta file esportato'; const labelInput=document.createElement('select'); ['fronte','retro','lato','dettaglio','etichetta','suola','difetto','altro'].forEach(v=>{let o=document.createElement('option');o.value=v;o.textContent=v[0].toUpperCase()+v.slice(1);labelInput.append(o);}); labelInput.value=['fronte','retro','lato','dettaglio','etichetta','suola','difetto','altro'].includes(item.label)?item.label:'altro'; item.label=labelInput.value; labelInput.onchange=()=> item.label=labelInput.value; labelWrap.append(labelTitle,labelInput); adjustDetails.append(labelWrap); makeSlider(item,'brightness','Luminosità',65,140,adjustDetails,refresh); makeSlider(item,'contrast','Contrasto',70,135,adjustDetails,refresh); makeSlider(item,'saturate','Saturazione',70,130,adjustDetails,refresh); makeSlider(item,'warmth','Temperatura',-50,50,adjustDetails,refresh); makeSlider(item,'sharp','Nitidezza',0,35,adjustDetails,refresh); const cr=document.createElement('label');cr.className='range';cr.innerHTML='<span>Ritaglio margini</span>';const cv=document.createElement('span');cv.textContent=(item.crop||0)+'%';cr.append(cv);adjustDetails.append(cr);const ci=document.createElement('input');ci.type='range';ci.min='0';ci.max='18';ci.value=item.crop||0;ci.oninput=()=>{item.crop=Number(ci.value);cv.textContent=ci.value+'%';refresh();};adjustDetails.append(ci); const ciLabel=document.createElement('label');ciLabel.className='range';ciLabel.innerHTML='<span>Intensità pulizia sfondo</span>';const ciValue=document.createElement('span');ciValue.textContent=(item.cleanStrength??85)+'%';ciLabel.append(ciValue);adjustDetails.append(ciLabel);
+ const labelWrap=document.createElement('div'); labelWrap.className='stack'; const labelTitle=document.createElement('div'); labelTitle.className='sub'; labelTitle.textContent='Etichetta file esportato'; const labelInput=document.createElement('select'); ['fronte','retro','lato','dettaglio','etichetta','suola','difetto','altro'].forEach(v=>{let o=document.createElement('option');o.value=v;o.textContent=v[0].toUpperCase()+v.slice(1);labelInput.append(o);}); labelInput.value=['fronte','retro','lato','dettaglio','etichetta','suola','difetto','altro'].includes(item.label)?item.label:'altro'; item.label=labelInput.value; labelInput.onchange=()=> item.label=labelInput.value; labelWrap.append(labelTitle,labelInput); adjustDetails.append(labelWrap); makeSlider(item,'brightness','Luminosità',35,180,adjustDetails,refresh); makeSlider(item,'contrast','Contrasto',40,170,adjustDetails,refresh); makeSlider(item,'saturate','Saturazione',0,180,adjustDetails,refresh); makeSlider(item,'warmth','Temperatura',-50,50,adjustDetails,refresh); makeSlider(item,'sharp','Nitidezza',0,35,adjustDetails,refresh); const cr=document.createElement('label');cr.className='range';cr.innerHTML='<span>Ritaglio margini</span>';const cv=document.createElement('span');cv.textContent=(item.crop||0)+'%';cr.append(cv);adjustDetails.append(cr);const ci=document.createElement('input');ci.type='range';ci.min='0';ci.max='18';ci.value=item.crop||0;ci.oninput=()=>{item.crop=Number(ci.value);cv.textContent=ci.value+'%';refresh();};adjustDetails.append(ci); const ciLabel=document.createElement('label');ciLabel.className='range';ciLabel.innerHTML='<span>Intensità pulizia sfondo</span>';const ciValue=document.createElement('span');ciValue.textContent=(item.cleanStrength??85)+'%';ciLabel.append(ciValue);adjustDetails.append(ciLabel);
  const cleanRange=document.createElement('input');cleanRange.type='range';cleanRange.min=20;cleanRange.max=100;cleanRange.value=item.cleanStrength??85;cleanRange.oninput=()=>{item.cleanStrength=Number(cleanRange.value);ciValue.textContent=cleanRange.value+'%';refresh();};adjustDetails.append(cleanRange);
  const status=document.createElement('div'); status.className='progress'; sec.append(status); const info=document.createElement('div'); info.className='small'; info.textContent='Controlla sempre che prodotto, colore e difetti reali restino fedeli.'; sec.append(info); const presets=document.createElement('div');presets.className='row';
  const presetDefs=[
@@ -387,7 +421,7 @@ function redraw(){
  });
  const presetTitle=document.createElement('div');presetTitle.className='toolbarTitle';presetTitle.textContent='01  ·  Aspetto del prodotto';sec.append(presetTitle,presets);
  const bgTitle=document.createElement('div');bgTitle.className='toolbarTitle';bgTitle.textContent='02  ·  Sfondo';sec.append(bgTitle);
- const actions1=document.createElement('div'); actions1.className='row'; const improve=document.createElement('button'); improve.className='secondary'; improve.textContent='Migliora foto'; improve.onclick=()=>{ item.mode='improve'; item.status='Correzione fotografica naturale applicata.'; refresh(); }; const clean=document.createElement('button'); clean.className='secondary'; clean.textContent='Pulisci sfondo'; clean.onclick=()=>{ item.mode='clean'; item.status='Sfondo chiaro uniformato e ripulito.'; item.cleanMask=null; refresh(); }; const precise=document.createElement('button');precise.className='secondary';precise.textContent='Pulizia precisa AI';
+ const actions1=document.createElement('div'); actions1.className='row'; const improve=document.createElement('button'); improve.className='secondary'; improve.textContent='Migliora foto'; improve.onclick=()=>{ applyDefaultImprove(item); redraw(); }; const clean=document.createElement('button'); clean.className='secondary'; clean.textContent='Pulisci sfondo'; clean.onclick=()=>{ item.mode='clean'; item.status='Sfondo chiaro uniformato e ripulito.'; item.cleanMask=null; refresh(); }; const precise=document.createElement('button');precise.className='secondary';precise.textContent='Pulizia precisa AI';
  precise.onclick=async()=>{precise.disabled=true;try{await removeBackgroundAI(drawBasePhoto(item),item,status);item.mode='clean';item.status='Pulizia AI attivata. Controlla i bordi del prodotto.';refresh();}catch(e){item.status='Pulizia AI non disponibile: '+e.message;status.textContent=item.status;}finally{precise.disabled=false;}};
  const cut=document.createElement('button'); cut.textContent='Rimuovi sfondo'; cut.onclick=async()=>{ cut.disabled=true; try{ item.mode='cut'; const base=drawBasePhoto(item); await removeBackgroundAI(base,item,status); item.status='Sfondo rimosso. Controlla bene i bordi.'; refresh(); } catch(e){ item.mode='improve'; item.status='Errore scontorno: '+e.message; status.textContent=item.status; } finally { cut.disabled=false; } }; actions1.append(improve,precise,cut);const quickDetails=document.createElement('details');quickDetails.style.marginTop='9px';const summary=document.createElement('summary');summary.textContent='Altri strumenti: pulizia rapida';summary.style.fontSize='13px';summary.style.cursor='pointer';quickDetails.append(summary,clean);sec.append(actions1,quickDetails); const actions2=document.createElement('div'); actions2.className='row'; const reset=document.createElement('button'); reset.className='soft'; reset.textContent='Ripristina automatico'; reset.onclick=()=>{ applyDefaultImprove(item); refresh(); }; const moveUp=document.createElement('button'); moveUp.className='soft'; moveUp.textContent='Sposta su'; moveUp.onclick=()=>{ if(i===0) return; [photos[i-1],photos[i]]=[photos[i],photos[i-1]]; activePhotoIndex=i-1; redraw(); }; const moveDown=document.createElement('button'); moveDown.className='soft'; moveDown.textContent='Sposta giù'; moveDown.onclick=()=>{ if(i===photos.length-1) return; [photos[i+1],photos[i]]=[photos[i],photos[i+1]]; activePhotoIndex=i+1; redraw(); }; const copy=document.createElement('button');copy.className='secondary';copy.textContent='Copia regolazioni su tutte';copy.onclick=()=>{if(!confirm('Copiare le regolazioni di questa foto sulle altre?'))return;photos.forEach(p=>{if(p!==item){p.settings={...item.settings};p.crop=item.crop;p.cleanStrength=item.cleanStrength;p.cleanMask=null;}});redraw();};actions2.append(reset,moveUp,moveDown,copy); sec.append(actions2); const actions3=document.createElement('div'); actions3.className='row'; const download=document.createElement('button'); download.className='soft'; download.textContent='Scarica questa foto'; download.onclick=async()=>{ const out=await getOutput(item,i); triggerDownload(out.blob,out.name); }; const removeBtn=document.createElement('button'); removeBtn.className='danger'; removeBtn.textContent='Elimina questa foto'; removeBtn.onclick=()=>{ cleanupItem(item); photos.splice(i,1); activePhotoIndex=Math.min(i,photos.length-1); redraw(); }; const toPhotos=document.createElement('button');toPhotos.textContent='Salva nel rullino';toPhotos.onclick=()=>shareImageToPhotos(item,i,toPhotos); actions3.append(toPhotos,download,removeBtn);sec.append(actions3); root.append(sec); refresh(); }); }
 function cleanupItem(item){ try{ URL.revokeObjectURL(item.url); }catch{} try{ if(item.aiMaskUrl) URL.revokeObjectURL(item.aiMaskUrl);}catch{} }
@@ -471,7 +505,7 @@ $('#shareAllPhotos').onclick=async()=>{
    if(!window.JSZip)throw Error('Libreria ZIP non disponibile. Usa «Salva nel rullino» sotto ciascuna foto.');
    const zip=new JSZip();outputs.forEach(o=>zip.file(o.name,o.blob));
    const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});
-   triggerDownload(blob,'vinted-foto-v2-0.zip');
+   triggerDownload(blob,'vinted-foto-v2-1.zip');
    st.textContent='ZIP scaricato come alternativa: aprilo in File per gestire le immagini.';
  }catch(e){st.textContent='Impossibile salvare tutte le foto: '+(e.message||e);}
  finally{button.disabled=false;button.textContent='Salva tutte nel rullino';}
