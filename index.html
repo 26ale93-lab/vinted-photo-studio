@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#102039">
-<title>Vinted Photo Studio — iPhone v2.2</title>
+<title>Vinted Photo Studio — iPhone v2.3</title>
 <style>
 :root{font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;background:#f3f6f5;color:#1b2e2c}
 *{box-sizing:border-box}body{margin:0;background:#f3f6f5}
@@ -172,7 +172,7 @@ input[type=range]{accent-color:#079fb1!important}
 #photos .toolbarTitle{color:#174b65!important}
 #photos .photo>.row button:first-child{background:#0a98a9;color:#fff}
 footer{color:#5d748a}
-</style>
+#oneTapAuto{background:linear-gradient(110deg,#153a65,#08aeb5)!important;color:#fff!important;box-shadow:0 8px 20px #087eaa38;min-height:54px;flex:1 1 100%;font-size:16px}#oneTapStatus{color:#087987;font-size:12px;font-weight:600}</style>
 </head>
 <body>
 <header>
@@ -187,10 +187,13 @@ footer{color:#5d748a}
     <p id="total" class="status">Nessuna foto caricata</p>
     <div class="toolbarTitle">Azioni rapide su tutte le foto</div>
     <div class="row">
+      <button id="oneTapAuto">✦ Migliora tutto con AI</button>
       <button id="autoImprove" class="secondary">Migliora tutte</button>
       <button id="autoClean" class="secondary">Pulisci sfondo su tutte</button>
       <button id="clearAll" class="soft">Svuota</button>
     </div>
+    <p id="oneTapStatus" class="progress" aria-live="polite"></p>
+    <div class="warning">Il pulsante AI elabora tutte le foto una alla volta sul dispositivo: corregge luce e sfondo, senza modificare la posa o inventare dettagli del prodotto. Su iPhone il primo caricamento del modello può richiedere tempo; se non è disponibile, usa la pulizia gratuita non-AI.</div>
     <div class="warning">La modalità <strong>Pulisci sfondo</strong> è pensata per fondi già chiari o bianchi con righe, pieghe leggere o piccole ombre. La modalità <strong>Rimuovi sfondo</strong> scontorna il prodotto e sostituisce lo sfondo.</div>
   </section>
 
@@ -513,6 +516,35 @@ function triggerDownload(blob,name){ const url=URL.createObjectURL(blob); const 
 function safeSlug(s){ return (s||'vinted').toLowerCase().trim().replace(/[^a-z0-9àèéìòù_-]+/gi,'-').replace(/-+/g,'-').replace(/^[-]+|[-]+$/g,'') || 'vinted'; }
 async function getOutput(item,index){ const canvas=renderFinal(item); const png=item.mode==='cut' && $('#cutBackground').value==='transparent' && item.aiMaskImg; const blob=await canvasToBlob(canvas,png?'image/png':'image/jpeg',.94); const modeSuffix=item.mode==='clean'?'clean':(item.mode==='cut'?'cut':'photo'); const ext=png?'png':'jpg'; const prefix=safeSlug($('#filePrefix').value||'vinted'); const label=safeSlug(item.label || guessLabel(index,photos.length)); const num=String(index+1).padStart(2,'0'); return {blob,name:`${prefix}_${num}_${label}_${modeSuffix}.${ext}`}; }
 $('#files').onchange=async e=>{ for(const f of [...e.target.files]){ if(photos.some(p=>p.file.name===f.name&&p.file.size===f.size&&p.file.lastModified===f.lastModified)) continue; const url=URL.createObjectURL(f); try{ const img=await loadImage(url); const item={file:f,img,url,settings:defaults(),mode:'improve',cleanMask:null,aiMaskImg:null,aiMaskUrl:null,status:'',label:'',crop:0,cleanStrength:85,layout:{rotation:0,x:0,y:0},layoutDraft:{rotation:0,x:0,y:0}}; applyDefaultImprove(item); photos.push(item);} catch(err){ URL.revokeObjectURL(url); alert('Formato non leggibile: '+f.name);} } e.target.value=''; applyNames();activePhotoIndex=Math.max(0,photos.length-1);redraw(); };
+$('#oneTapAuto').onclick=async()=>{
+ const button=$('#oneTapAuto'),status=$('#oneTapStatus');
+ if(!photos.length){status.textContent='Carica almeno una foto.';return;}
+ button.disabled=true;button.textContent='Elaborazione in corso…';
+ let aiCount=0,fallbackCount=0;
+ try{
+  for(let i=0;i<photos.length;i++){
+   const item=photos[i];
+   status.textContent='Miglioro fotografia '+(i+1)+' di '+photos.length+'…';
+   applyDefaultImprove(item);
+   item.layout={rotation:0,x:0,y:0};item.layoutDraft={...item.layout};
+   try{
+    if(!item.aiMaskImg)await removeBackgroundAI(drawBasePhoto(item),item,status);
+    item.mode='clean';item.cleanStrength=88;
+    item.status='Luce automatica + pulizia sfondo AI. Verifica bordi e colori prima della vendita.';
+    aiCount++;
+   }catch(e){
+    applyDefaultClean(item);
+    item.status='Luce automatica + pulizia sfondo locale (AI non disponibile).';
+    fallbackCount++;
+   }
+   // Yield once between photos to keep iPhone's UI responsive.
+   await new Promise(resolve=>setTimeout(resolve,0));
+  }
+  redraw();
+  status.textContent='Completato: '+photos.length+' foto. Pulizia AI: '+aiCount+', alternativa locale: '+fallbackCount+'. Controlla le anteprime prima di salvare.';
+ }catch(e){redraw();status.textContent='Elaborazione interrotta: '+(e.message||e);}
+ finally{button.disabled=false;button.textContent='✦ Migliora tutto con AI';}
+};
 $('#autoImprove').onclick=()=>{ photos.forEach(applyDefaultImprove); redraw(); };
 $('#autoClean').onclick=()=>{ photos.forEach(applyDefaultClean); redraw(); };
 $('#clearAll').onclick=()=>{ if(!confirm('Eliminare tutte le foto dalla sessione?')) return; photos.forEach(cleanupItem); photos.length=0;activePhotoIndex=0; redraw(); };
@@ -545,7 +577,7 @@ $('#shareAllPhotos').onclick=async()=>{
    if(!window.JSZip)throw Error('Libreria ZIP non disponibile. Usa «Salva nel rullino» sotto ciascuna foto.');
    const zip=new JSZip();outputs.forEach(o=>zip.file(o.name,o.blob));
    const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});
-   triggerDownload(blob,'vinted-foto-v2-2.zip');
+   triggerDownload(blob,'vinted-foto-v2-3.zip');
    st.textContent='ZIP scaricato come alternativa: aprilo in File per gestire le immagini.';
  }catch(e){st.textContent='Impossibile salvare tutte le foto: '+(e.message||e);}
  finally{button.disabled=false;button.textContent='Salva tutte nel rullino';}
